@@ -1,0 +1,2230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>뉴스 및 소셜 데이터 토픽 × 법률 의안 리더보드</title>
+<style>
+  :root {
+    --bg:#0b0d12; --panel:#121621; --muted:#8b93a7; --text:#e9ecf2;
+    --border:#1b2030; --bar:#2b3347; --fill:#7aa2ff;
+    --gold:#ffd166; --gold-dark:#e3b43f;
+    --silver:#cfd8dc; --silver-dark:#a7b1b7;
+    --bronze:#e6a57e; --bronze-dark:#c98760;
+    --accent:#b06cff; --accent2:#6dd6ff;
+    --stat-label:#ffd166;
+
+    /* Section chip (Slate tone) */
+    --sec-chip-fg:#c8d2e6;
+    --sec-chip-brd:#5b6a86;
+    --sec-chip-bg:rgba(120, 140, 170, .12);
+
+    /* Hero colors */
+    --hero-grad-1:#141a2a;
+    --hero-grad-2:#0f1320;
+    --hero-edge:#6dd6ff33;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin:0; background: var(--bg); color: var(--text);
+         font-family: 'Inter','Noto Sans KR',system-ui,-apple-system,Roboto,Arial,sans-serif; }
+
+  /* ===== Hero (top) ===== */
+  .hero {
+    position: relative;
+    margin: 0 0 18px;
+    padding: 28px 18px 26px;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(1200px 420px at 10% -10%, #8fb6ff1a, transparent 60%),
+      radial-gradient(1000px 500px at 90% -20%, #6dd6ff14, transparent 60%),
+      linear-gradient(180deg, var(--hero-grad-1), var(--hero-grad-2));
+    overflow: hidden;
+  }
+  .hero::after {
+    /* subtle grid overlay */
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(0deg, #ffffff08 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff07 1px, transparent 1px);
+    background-size: 24px 24px, 24px 24px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.1));
+    pointer-events:none;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  .hero-inner { display:flex; flex-direction:column; gap:14px; position:relative; z-index:1; }
+
+  .hero-title {
+    font-size: 2rem; font-weight: 900; letter-spacing: .2px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-title .logo {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width: 56px; height: 56px; padding: 0 16px; border-radius: 16px;
+    background: radial-gradient(100% 100% at 30% 20%, #aee3ff, #7aa2ff 60%, #4a69d9 100%);
+    box-shadow:
+      0 0 0 1px #5f77ff55,
+      0 10px 36px #6dd6ff30,
+      inset 0 -8px 14px #00000030;
+    color:#0b1020; font-weight:900; font-size: 22px; letter-spacing: .8px; text-transform: uppercase; line-height:1;
+  }
+  @media (max-width:960px){
+    .hero-title .logo{ min-width:48px; height:48px; padding:0 12px; font-size:20px; border-radius:12px; }
+  }
+  .hero-sub { color: var(--muted); font-size: .98rem; }
+  .hero-badges { display:flex; gap:10px; flex-wrap:wrap; }
+  .medal-pill {
+    display:inline-flex; align-items:center; gap:8px; padding:6px 10px;
+    border-radius: 999px; border:1px solid var(--border); background:#121827cc;
+    box-shadow: inset 0 -1px 0 #ffffff10, 0 6px 18px #00000025;
+    font-weight:800; font-size:.92rem;
+  }
+  .medal-pill .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .medal-pill.g .dot { background: var(--gold); box-shadow:0 0 8px #ffd16666; }
+  .medal-pill.s .dot { background: var(--silver); box-shadow:0 0 8px #cfd8dc66; }
+  .medal-pill.b .dot { background: var(--bronze); box-shadow:0 0 8px #e6a57e66; }
+
+  .stat-cards { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px; }
+  .stat-card {
+    border:1px solid var(--border); background:#101524cc; border-radius:14px; padding:12px 14px;
+  }
+  .stat-label { color:var(--muted); font-size:.85rem; }
+  .stat-value { font-size:1.25rem; font-weight:900; letter-spacing:.2px; }
+
+  /* ===== Controls + Table ===== */
+  .section-pad { padding: 0 18px 24px; }
+
+  .hint { color: var(--muted); margin-bottom: 14px; font-size: 0.95rem; }
+
+  .controls { display:flex; gap:12px; align-items:center; margin: 10px 0 18px; flex-wrap: wrap; }
+  input[type="text"] { padding:10px 12px; border-radius: 10px; border:1px solid var(--border);
+                        background: var(--panel); color: var(--text); min-width: 320px; }
+  button { background: var(--accent); color: #fff; border: none; padding: 10px 14px; border-radius: 10px; cursor:pointer; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border:1px solid var(--border);
+           border-radius: 14px; overflow: hidden; table-layout: fixed; }
+  th, td { padding: 12px 14px; border-bottom:1px solid var(--border); vertical-align: middle; }
+  th { position: sticky; top: 0; background: #161b28; font-weight: 700; cursor: pointer; text-align: left; }
+  th .sub { display:block; font-weight: 400; font-size: 0.83rem; color: var(--muted); margin-top: 2px; }
+  tr:hover { background: #141a26; }
+
+  /* column widths (Topic ID hidden) */
+  th:nth-child(1), td.rank { width: 88px; }
+  th:nth-child(2), td.topic { width: 76px; display:none !important; }
+  th:nth-child(3) { width: 22%; }     /* Topic Name */
+  th:nth-child(4) { width: 16%; }     /* Keywords */
+  th:nth-child(5) { width: 28%; }     /* Top Law */
+  th:nth-child(6) { width: 24%; }     /* Top 3 Bills */
+  th:nth-child(7), th:nth-child(8), td.num { width: 90px; }
+
+  td.rank { font-weight: 700; color: #c4ccff; white-space: nowrap; }
+  .rk { margin-left: 6px; }
+  .toggle { background:#223; border:1px solid #2a3250; color:#cfe; border-radius:8px; padding:4px 6px; font-size:0.8rem; }
+
+  .tname-text { white-space: normal; line-height: 1.3; }
+  .law-name { font-weight: 700; margin-bottom: 6px; }
+
+  .bar { height: 10px; background: var(--bar); border-radius: 999px; overflow: hidden; border:1px solid #22283a; }
+  .bar .fill { height: 100%; background: linear-gradient(90deg, var(--fill), #a6c1ff); }
+  .law-meta { margin-top:6px; font-size: 0.9rem; color: var(--muted); }
+
+  .top3 { min-width: 380px; }
+  .chip { padding: 8px 10px; border-radius: 12px; margin-bottom: 8px; background: #141a26; border:1px solid var(--border); }
+  .chip.gold { border-color: var(--gold-dark); background: linear-gradient(180deg, rgba(255,228,140,0.14), rgba(255,228,140,0.0)); }
+  .chip.silver { border-color: var(--silver-dark); background: linear-gradient(180deg, rgba(215,225,232,0.12), rgba(215,225,232,0.0)); }
+  .chip.bronze { border-color: var(--bronze-dark); background: linear-gradient(180deg, rgba(235,180,140,0.12), rgba(235,180,140,0.0)); }
+  .chip-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; }
+  .chip-row.top { margin: 4px 0 8px; }
+
+  .chip .medal { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius: 8px; font-weight: 800; color:#000; margin-top: 1px; flex:0 0 26px; }
+  .chip.gold .medal { background: var(--gold); }
+  .chip.silver .medal { background: var(--silver); }
+  .chip.bronze .medal { background: var(--bronze); }
+  .chip-label { line-height: 1.3; }
+  .chip-pct { color:#dfe6ff; font-weight: 700; }
+  .chip-bar { height: 8px; background: var(--bar); border-radius: 999px; overflow: hidden; border:1px solid #232a3c; }
+  .chip-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+  /* section chip — slate */
+  .sec-chip {
+    display:inline-block; padding:6px 10px; border-radius:999px;
+    border:1px solid var(--sec-chip-brd); color:var(--sec-chip-fg);
+    background:var(--sec-chip-bg); font-weight:800; font-size:.92rem;
+  }
+
+  .minor { color: var(--muted); font-size: 0.85rem; }
+  .empty { color: var(--muted); }
+
+  /* keyword chips */
+  .kw { white-space: normal; line-height: 1.2; }
+  .kw-chip {
+    display:inline-block; margin: 4px 6px 4px 0; padding: 6px 10px; border-radius: 999px;
+    border:1px solid #2a3250; background:#141a26; color:#dbe6ff; font-size: 0.88rem; cursor:pointer;
+  }
+  .kw-chip:hover { background:#192137; }
+  .kw-more { color:#9fb3d9; font-size:0.85rem; margin-left:4px; }
+
+  .kw-block { margin-bottom: 14px; }
+  .kw-title { font-weight:700; margin-bottom:8px; }
+  .kw-list { margin-bottom: 8px; }
+
+  /* Row medals for top-3 topics */
+  tr.row-gold td.rank .rk { color: var(--gold); }
+  tr.row-silver td.rank .rk { color: var(--silver); }
+  tr.row-bronze td.rank .rk { color: var(--bronze); }
+
+  /* Cards & Grid */
+  .expand-wrap.cards { padding: 6px 2px 2px; }
+  .card-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px; }
+  .bill-card { background:#141a26; border:1px solid var(--border); border-radius:16px; padding:14px; }
+  .bill-card-head { margin-bottom:8px; }
+  .badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    height:24px; padding:0 8px; border-radius:10px;
+    background:#20263a; color:#cfe; font-weight:700; font-size:.85rem;
+    border:1px solid #2a3250;
+  }
+  .bill-title { font-weight:800; margin:6px 0 2px; line-height:1.25; }
+  .bill-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); font-size: .85rem; }
+
+  .bill-card-body .stats { display:flex; flex-wrap:wrap; gap:18px; margin:6px 0 10px; align-items:baseline; }
+  .bill-card-body .stats .label { color: var(--stat-label); font-weight: 800; }
+  .bill-card-body .stats .val { font-weight: 700; color: var(--text); }
+
+  .summary { color:#dbe6ff; line-height:1.35; white-space: pre-line; }
+  .more-btn { margin-top:6px; padding:6px 10px; border-radius:8px; background:#20263a; color:#e6ecff; border:1px solid #2a3250; cursor:pointer; }
+
+  /* line clamps */
+  .clamp-1 { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+  .clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .clamp-6 { display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden; }
+  .expanded { -webkit-line-clamp:unset !important; display:block !important; }
+
+  @media (max-width: 960px) {
+    .stat-cards { grid-template-columns: 1fr; }
+    .section-pad { padding: 0 12px 18px; }
+    .hero { padding: 22px 12px 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .top3 { min-width: 320px; }
+    th:nth-child(3) { width: 38%; }
+    th:nth-child(4) { width: 0%; display:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="wrap hero-inner">
+      <div class="hero-title">
+        <span class="logo">ISNLP</span>
+        뉴스 및 소셜 데이터 토픽 × 법률 의안 리더보드
+      </div>
+      <div class="hero-sub">생성일시: 2025-10-16 21:29 (KST)</div>
+
+      <div class="hero-badges">
+        <span class="medal-pill g"><span class="dot"></span>#1 Gold</span>
+        <span class="medal-pill s"><span class="dot"></span>#2 Silver</span>
+        <span class="medal-pill b"><span class="dot"></span>#3 Bronze</span>
+      </div>
+
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-label">총 토픽 수</div>
+          <div class="stat-value">10</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">문서 수 합계</div>
+          <div class="stat-value">42,718</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">의안 언급 합계</div>
+          <div class="stat-value">213,590</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap section-pad">
+    <div class="hint">• 토픽 행을 <b>클릭</b>하면 <b>Top Keywords</b>와 <b>Top 5 의안</b> 카드가 펼쳐집니다. 키워드 칩 클릭 → 즉시 검색.</div>
+    <div class="controls">
+      <input id="filter" type="text" placeholder="검색: 토픽/키워드/법률/의안 이름·코드…" oninput="applyFilter()">
+      <button onclick="resetFilter()">초기화</button>
+    </div>
+
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0,'num')">순위 <span class="sub">토픽 순위</span></th>
+          <th onclick="sortTable(1,'num')">Topic <span class="sub">토픽 ID</span></th>
+          <th onclick="sortTable(2,'str')">Topic Name <span class="sub">토픽 제목</span></th>
+          <th onclick="sortTable(3,'str')">Keywords <span class="sub">상위 키워드</span></th>
+          <th onclick="sortTable(4,'str')">Top Law · Law Ratio <span class="sub">최다 법률명 · 점유율</span></th>
+          <th onclick="sortTable(5,'str')">Top 3 Bills (share) <span class="sub">의안 이름 · 점유율</span></th>
+          <th onclick="sortTable(6,'num')">Records <span class="sub">문서 수</span></th>
+          <th onclick="sortTable(7,'num')">Mentions <span class="sub">언급 총합</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr class="row-gold" onclick="rowToggle(this, event)" data-keywords="사고 안전 중대재해처벌법 작업 사고가 중대재해 사망 현장 발생 근로자 안전보건 산재 발생한 산업안전보건법 대한 현장에서 있다 이상 있는 안전관리">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">1</span>
+          </td>
+          <td class="topic">1</td>
+          <td class="tname"><div class="tname-text clamp-2" title="중대재해 현장 안전관리">중대재해 현장 안전관리</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사고")'>사고</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("안전")'>안전</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중대재해처벌법")'>중대재해처벌법</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("작업")'>작업</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사고가")'>사고가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중대재해")'>중대재해</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사망")'>사망</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("현장")'>현장</button><span class='kw-more' title='발생, 근로자, 안전보건, 산재, 발생한, 산업안전보건법, 대한, 현장에서, 있다, 이상, 있는, 안전관리'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="중대재해 처벌 등에 관한 법률">중대재해 처벌 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:39%"></div></div>
+            <div class="law-meta">법률 점유율: 39.2% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)</span>
+                <span class="chip-pct">18.1%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div>
+            <div class="chip silver" title="중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)</span>
+                <span class="chip-pct">15.6%</span>
+              </div>
+              <div class="chip-bar"><div style="width:15%"></div></div>
+            </div>
+            <div class="chip bronze" title="중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)</span>
+                <span class="chip-pct">2.9%</span>
+              </div>
+              <div class="chip-bar"><div style="width:2%"></div></div>
+            </div></td>
+          <td class="num" data-val="14905">14905<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="74525">74525<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사고")'>사고</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("안전")'>안전</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중대재해처벌법")'>중대재해처벌법</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("작업")'>작업</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사고가")'>사고가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중대재해")'>중대재해</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사망")'>사망</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("현장")'>현장</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("발생")'>발생</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("근로자")'>근로자</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("안전보건")'>안전보건</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("산재")'>산재</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("발생한")'>발생한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("산업안전보건법")'>산업안전보건법</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대한")'>대한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("현장에서")'>현장에서</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있다")'>있다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이상")'>이상</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있는")'>있는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("안전관리")'>안전관리</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)</div>
+                <div class="bill-code">PRC_J2H5G0G3O0P7N1O0N1L1L0H3I9G3G4</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">13481</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.819</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.946</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">사망사고 등 중대한 재해를 발생시킨 사업주와 경영책임자, 법인의 형사책임을 대폭 강화한「중대재해 처벌 등에 관한 법률」(이하 “중대재해처벌법”이라 함)이 시행된 지 3년이 지났으나, 현재까지는 사망사고 감소 효과가 미미함.
+
+  법률규정만으로는 경영책임자에 해당하는 ‘이에 준하여 안전보건에 관한 업무를 담당하는 사람’이 누구인지 명확하지 않으며, 처벌요건인 안전ㆍ보건 관계 법령의 범위도 모호해 안전인력을 확보한 대형사업장 조차 법 준수에 상당한 애로를 겪고 있음.
+
+  제5조 후단의 ‘시설, 장비, 장소 등에 대하여 실질적으로 지배ㆍ운영ㆍ관리할 책임이 있는 경우’가 어디까지인지 알 수 없고, 제4조와 보호대상(종사자)이 동일해 현장 혼란만 초래하고 있음.
+
+  또한 경영자 신분에 있다는 이유만으로 현장에서 사고에 직접 기여한 자보다 더 무겁게 처벌하는 것은 과잉입법으로, 실제 법원은 사망원인을 제공한 법 위반 행위자에게는 징역 1년 미만, 주의감독(과실) 책임이 있는 경영책임자(대표이사)에게는 대부분 징역 1년 이상을 선고하고 있음.
+
+  한편, 중대재해처벌법은 많은 법률조항의 불명확성과 처벌의 과도성에도 불구하고, 법률 제정 이후 단 한 차례도 개정이 추진되지 못했음.
+
+  이에, 동 법률의 경영책임자 정의와 안전ㆍ보건 관계 법령의 범위를 구체화하고 법 적용에 대한 혼란이 없도록 제5조를 삭제하는 등 처벌요건을 명확히 하며, 경영자 개인과 법인에 대한 형사처벌 수준을 완화함으로써, 현장의 혼란을 최소화하고 중대재해 예방의 실효성을 확보하려는 것임.
+
+
+
+주요내용
+
+
+
+  가. 사업의 안전보건 조직, 인력, 예산을 총괄ㆍ관리하도록 권한과 책임을 위임받은 사람을 경영책임자로 규정함(안 제2조).
+
+  나. 안전ㆍ보건 관계 법령의 범위에 대한 시행령 위임규정을 마련함(안 제4조).
+
+  다. 도급, 용역, 위탁 등 관계에서의 안전 및 보건 확보의무 규정을 삭제함(안 제5조).
+
+  라. 중대산업재해 발생 시 경영책임자등에 대한 처벌과 법인의 벌금수준을 완화함(안 제6조 및 제7조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)</div>
+                <div class="bill-code">PRC_O2W5T0S9B0A3X1F6E5B9A0Z1I4F5E2</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">15.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">11603</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.809</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.922</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">중대재해의 발생을 막고 국민의 생명을 보호하기 위하여 지난 2021년 현행법이 제정되어 2022년 1월 27일부터 시행 중에 있음. 
+
+  그러나 현행법 시행 이후에도 지속적으로 중대재해가 발생하고 있고, 특히 동일한 사업장에서 동종 또는 유사한 중대재해가 재발하는 사례가 빈발하고 있어 더 강력한 대응이 필요하다는 지적이 이어지고 있음. 
+
+  이에 사업의 안전보건에 관한 조건을 실질적이고 구체적으로 지배ㆍ결정할 수 있는 실질적 지위에 있는 자는 그 형식상의 지위ㆍ직위 여하를 불문하고 그 범위에 있어서는 경영책임자등으로 보도록 하고 과징금 제도도 신설하여, 사업장 등에서의 안전보건관리체계가 보다 강하게 구축되도록 하고 이를 통해 국민의 생명을 보다 강하게 보호하려는 것임(안 제2조제9호가목 후단 및 제15조의2 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)">중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)</div>
+                <div class="bill-code">PRC_U2S5T0B5C0A7B1Z7Z2X6G5G2E5F3D1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">2.9%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">2178</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.751</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.903</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 사망사고 등 중대재해로부터 시민의 안전을 위해 특정원료 또는 제조물, 공중이용시설 및 공중교통수단의 설계, 제조, 설치, 관리상의 결함으로 발생하는 재해를 ‘중대시민재해’로 규정하고, 해당 사업장 및 시설의 안전ㆍ보건 조치 의무를 위반해 중대시민재해에 이르게 한 사업주 등을 처벌하도록 하고 있음.
+
+  그러나 최근 땅꺼짐, 공항 사고 등 안전사고로 인한 일반 시민의 인명피해가 발생함에도, 도로 및 활주로 등은 중대시민재해 요건인 ‘공중이용시설’에 포함되지 않아 중대시민재해의 대상을 확대해야 한다는 지적이 제기되고 있음.
+
+  이에 ‘공중이용시설 및 공중교통시설’의 범위를 확대하여 도로, 활주로와 같이 일반 시민의 생활과 밀접한 관련이 있는 시설의 설계, 제조, 설치 또는 관리상의 결함을 원인으로 발생하는 안전 사고까지 중대시민재해의 범위에 명확히 포함함으로써 재해를 예방하고 안전 관리에 대한 경각심을 높이고자 함(안 제2조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)</div>
+                <div class="bill-code">PRC_Z2Y5W0X6E2F5E1E5D1B1B4X8Y7W6X6</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">2.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">1973</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.828</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.908</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">법 제정 본래 취지를 명확히 하기 위해, 현행법의 제명을 「중대재해 예방 등에 관한 법률」로 변경하고자 합니다.  
+
+  2022년 1월 27일 시행된 중대재해처벌법은 사업주나 경영책임자가 안전보건 확보 의무를 위반해 중대 산업재해가 발생한 경우, 징역이나 벌금을 부과하는 것을 주요 내용으로 합니다. 그러나 이 법의 제정 목적은 형사처벌 자체에 있는 것이 아니라, 시민의 생명과 안전을 최우선으로 보호하는 데 있습니다.
+
+  그런데 현행 제명이 「중대재해 처벌 등에 관한 법률」로 되어 있어, 법의 초점이 ‘예방’이 아닌 ‘처벌’에 맞춰져 있는 것처럼 비춰질 우려가 있습니다. 이로 인해 정당한 기업활동까지 위축될 수 있다는 지적도 제기됩니다. 
+
+  이에, 제명을 「중대재해 예방 등에 관한 법률」로 변경해 법의 취지를 분명히 하고자 합니다. 아울러, 중대재해를 일으킨 사업주에 대한 처벌 및 손해배상 책임은 이 법을 다른 법률에 우선하여 적용하고자 합니다. 중대재해의 예방과 사후 책임을 종합적으로 규율하는 특별법으로서의 위상을 명확히 하기 위한 것입니다.(안 제명 및 제2조의2).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="row-silver" onclick="rowToggle(this, event)" data-keywords="x000d 금지 특정업체 거래분쟁에 3년이하 특정인 마녀사냥 회원간의 정보통신망법에 공론화 비방 벌금형 or 징역 대한 따라 던스 사이즈 ㅠㅠ 너무">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">2</span>
+          </td>
+          <td class="topic">2</td>
+          <td class="tname"><div class="tname-text clamp-2" title="정보통신망법 위반에 따른 특정업체 거래분쟁과 비방 벌금형">정보통신망법 위반에 따른 특정업체 거래분쟁과 비방 벌금형</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("x000d")'>x000d</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("금지")'>금지</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특정업체")'>특정업체</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("거래분쟁에")'>거래분쟁에</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("3년이하")'>3년이하</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특정인")'>특정인</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("마녀사냥")'>마녀사냥</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회원간의")'>회원간의</button><span class='kw-more' title='정보통신망법에, 공론화, 비방, 벌금형, or, 징역, 대한, 따라, 던스, 사이즈, ㅠㅠ, 너무'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률">정보통신망 이용촉진 및 정보보호 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:99%"></div></div>
+            <div class="law-meta">법률 점유율: 99.8% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한준호의원 등 15인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한준호의원 등 15인)</span>
+                <span class="chip-pct">19.9%</span>
+              </div>
+              <div class="chip-bar"><div style="width:19%"></div></div>
+            </div>
+            <div class="chip silver" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(정일영의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(정일영의원 등 10인)</span>
+                <span class="chip-pct">19.5%</span>
+              </div>
+              <div class="chip-bar"><div style="width:19%"></div></div>
+            </div>
+            <div class="chip bronze" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이훈기의원 등 15인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이훈기의원 등 15인)</span>
+                <span class="chip-pct">17.2%</span>
+              </div>
+              <div class="chip-bar"><div style="width:17%"></div></div>
+            </div></td>
+          <td class="num" data-val="11896">11896<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="59480">59480<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("x000d")'>x000d</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("금지")'>금지</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특정업체")'>특정업체</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("거래분쟁에")'>거래분쟁에</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("3년이하")'>3년이하</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특정인")'>특정인</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("마녀사냥")'>마녀사냥</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회원간의")'>회원간의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("정보통신망법에")'>정보통신망법에</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("공론화")'>공론화</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("비방")'>비방</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("벌금형")'>벌금형</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("or")'>or</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("징역")'>징역</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대한")'>대한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("따라")'>따라</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("던스")'>던스</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사이즈")'>사이즈</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("ㅠㅠ")'>ㅠㅠ</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("너무")'>너무</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한준호의원 등 15인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한준호의원 등 15인)</div>
+                <div class="bill-code">PRC_H2E5F0L3K1J7R1Q0P1O4W3V6U6T4P9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">19.9%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">11810</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.789</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.852</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면정보통신망을 통하여 일반에게 공개를 목적으로 제공된 정보로 사생활의 침해 또는 명예훼손 등 타인의 권리가 침해된？경우？그？침해를？받은？자는？해당？정보를？처리한？정보통신서비스？제공자에게？그 정보의 삭제 또는 반박내용의 게재를 요청할 수 있음. 또한 방송통신심의위원회에 사생활의 침해 또는 명예훼손 등 타인의 권리를 침해하는 정보와 관련된 분쟁의 조정업무를 위한 명예훼손 분쟁조정부를 두도록 하고 있음.
+
+  그런데 사생활의 침해 또는 명예훼손 정보의 삭제 요청은 해당 정보가 게시된 사이트에서 할 수 있지만, 이로 인한 분쟁조정의 신청은 별도로 방송통신심의위원회의 인터넷피해구제 사이트에서 하도록 되어 있어 이용자들이 이러한 절차를 쉽게 알기 어렵고 관련 사이트를 찾아가야 하는 번거로움이 있음.
+
+  한편, 현행법에 있던 개인정보분쟁조정위원회 관련 규정을 「개인정보 보호법」으로 이관하여 규정하면서 이를 준용하도록 하고 있는 명예훼손 분쟁조정부의 설치ㆍ운영 및 분쟁조정 절차 등에 관한 규정에 공백이 발생함.
+
+  이에 명예훼손 정보가 유통된 정보통신망을 운영ㆍ관리하는 정보통신서비스 제공자가 이용자의 요청에 따라 삭제등 조치를 한 때에는 해당 조치를 한 사실과 함께 해당 정보를 게재ㆍ유통한 이용자 정보의 제공 청구 및 명예훼손 분쟁조정 신청 등에 관한 사항을 신청인 등에게 알리도록 하는 한편, 명예훼손 분쟁조정부의 설치ㆍ운영 및 분쟁조정 절차 등에 관한 사항을 규정함으로써 입법공백 상태를 해소하려는 것임(안 제44조의2, 제44조의10, 제44조의11부터 제44조의14까지 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(정일영의원 등 10인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(정일영의원 등 10인)</div>
+                <div class="bill-code">PRC_G2H5F0G8E2M9N1L7M3K6J1J8R4S0Q5</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">19.5%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">11580</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.791</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.856</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 불법정보의 유통을 금지하고 방송통신위원회로 하여금 불법정보에 대한 처리 거부ㆍ정지 또는 제한을 명하도록 하는 등 이용자 보호규정을 마련하고 있음.
+
+  그런데 최근 허위 또는 조작된 사실의 정보를 유포하여 여론 왜곡과 사회적 갈등 조장으로 인한 사회적 문제가 꾸준히 증가하고 있고 이러한 허위조작정보의 무분별한 확산으로 인한 경제적ㆍ정신적 피해가 증가하고 있음에도 이에 대한 법적 규제 근거가 미흡함.
+
+  이에 정보통신망에 유통이 금지되는 불법정보에 정치적ㆍ경제적 이익 등을 목적으로 거짓 또는 왜곡을 통하여 정확한 사실관계를 오인하도록 조작된 정보를 포함시키고, 해당 불법정보 유통으로 타인에게 손해를 입히는 경우 그 손해액의 5배 이내에서 배상하도록 하는 징벌적 손해배상제도를 도입하려는 것임(안 제44조의7제1항제2호의2, 제44조의11 및 제74조제1항제2호의2 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이훈기의원 등 15인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이훈기의원 등 15인)</div>
+                <div class="bill-code">PRC_N2N5L0M4L1L4T1T3S5Q4R4P8Q7M9M1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">17.2%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">10215</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.783</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.864</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">정보통신서비스 이용자가 사망하기 전에 정보통신서비스를 통하여 남긴 게시글 등의 정보(이하 “디지털정보”라 함)의 재산적 가치에 대한 인식이 높아지고 있으며, 이용자가 사망한 후에도 상속인 등이 이를 승계하여 보존ㆍ관리하고자 하는 사례가 증가하고 있음에도 현행법에서는 관련 내용을 규정하고 있지 않아 디지털정보의 처리가 어려운 상황임. 
+
+  이에 정보통신서비스 제공자 중 일일 평균 이용자의 수, 매출액, 사업의 종류 등이 대통령령으로 정하는 기준에 해당하는 자로 하여금  이용자가 사망하는 경우 이용자가 지정한 처리방법에 따라 디지털정보를 처리하도록 하고, 이용자에게 디지털정보처리방법의 변경 여부를 정기적으로 확인하도록 하는 등 디지털정보의 처리에 관한 법적 근거를 마련하려는 것임(안 제44조의11 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이종배의원 등 10인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이종배의원 등 10인)</div>
+                <div class="bill-code">PRC_T2U5B0C4A0B2Z1A0Y0Z7G2F3G6E0E3</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">16.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">9871</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.783</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.842</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 정보통신망을 통하여 일반에게 공개를 목적으로 제공된 정보로 사생활 침해나 명예훼손 등 타인의 권리가 침해된 경우 그 침해를 받은 자는 해당 정보를 처리한 정보통신서비스 제공자에게 침해사실을 소명하여 그 정보의 삭제를 요청할 수 있고, 정보통신서비스 제공자가 정보의 삭제 요청에도 불구하고 권리의 침해 여부를 판단하기 어렵거나 이해당사자 간에 다툼이 예상되는 경우에는 해당 정보에 대한 접근을 임시적으로 차단하는 조치(이하 “임시조치”라 함)를 할 수 있음.
+
+  또한 정보통신망을 통하여 다른 사람의 명예를 훼손한 경우, 사실 적시에 의한 명예훼손은 3년 이하의 징역 또는 3천만원 이하의 벌금에, 허위 사실 적시에 의한 명예훼손은 7년 이하의 징역, 10년 이하의 자격정지 또는 5천만원 이하의 벌금에 처하도록 규정하고 있음.
+
+  그런데, 최근 유튜브 등 소셜플랫폼을 통하여 타인의 사생활이나 약점을 폭로하는 등 권리침해를 내용으로 하는 자극적인 온라인 콘텐츠를 제작함으로써 수익을 거두고 있는 사례가 증가하고 있으나, 정보 삭제를 요청하더라도 권리침해 여부를 최종적으로 판단하기까지 상당한 시간이 소요되고 있으며 그 기간 동안 해당 게시물이 온라인상 그대로 노출되어 피해가 지속되거나 확대되는 문제가 발생하고 있음. 특히 자극적인 콘텐츠일수록 빠르게 확산되는 특성으로 인해 짧은 시간 내에도 피해 규모가 커질 수 있다는 우려가 제기됨.
+
+  이에 임시조치의 기간을 현행 30일에서 60일로 연장하고, 정보통신망을 통한 명예훼손 시 사실 적시에 의한 경우 5년 이하의 징역 또는 5천만원 이하의 벌금에, 허위 사실 적시에 의한 경우 10년 이하의 징역, 10년 이하의 자격정지 또는 1억원 이하의 벌금형에 각각 처하도록 규정함으로써 정보통신망을 통하여 일반에게 공개를 목적으로 제공된 정보로 인하여 사생활 침해나 명예훼손 등 권리 침해를 받은 사람을 보다 적극적으로 보호할 수 있도록 하려는 것임(안 제44조의2제4항 후단 및 제70조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(조인철의원 등 11인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(조인철의원 등 11인)</div>
+                <div class="bill-code">PRC_Z2H5I0G5G2F2G1E0E3A0Z3Z6X7Y8X2</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">11.2%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">6681</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.783</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.837</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 명예훼손 등 타인의 권리를 침해하는 정보에 대해서는 불법정보로 규정하여 유통을 금지하고 있으며, 방송통신심의위원회의 심의를 거쳐 해당 정보의 처리를 거부ㆍ정지ㆍ제한할 수 있도록 규정하고 있음.
+
+  그러나 최근 정보통신망을 통해 특정 집단이나 그 구성원에 대해 차별과 폭력을 선동하는 혐오표현이 증가하면서 사회적 갈등이 심화되고 있음에도, 현행법상 혐오표현을 직접적으로 규제할 법적 근거가 미비하여 효과적인 대응이 어려운 실정임.
+
+  이에 인종ㆍ국가ㆍ민족ㆍ지역ㆍ나이ㆍ장애ㆍ성별ㆍ성적지향이나 종교ㆍ직업ㆍ질병 등을 이유로 특정 집단이나 그 구성원에 대하여 차별을 정당화ㆍ조장ㆍ강화하거나 폭력을 선전ㆍ선동하는 내용의 정보를 불법정보에 포함시키고, 정보통신서비스 제공자가 신고시스템을 마련하도록 하여 건전한 인터넷 문화를 형성하는데 기여하려는 것임(안 제44조의7).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="row-bronze" onclick="rowToggle(this, event)" data-keywords="사칭 사기 피해를 피해 사기를 법무법인대범 법적 가짜 이런 것도 중요한 것이 계좌를 만약 image 그리고 어떻게 있어요 가장 cafe">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">3</span>
+          </td>
+          <td class="topic">7</td>
+          <td class="tname"><div class="tname-text clamp-2" title="사기 피해 예방과 법적 대응">사기 피해 예방과 법적 대응</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사칭")'>사칭</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기")'>사기</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해를")'>피해를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해")'>피해</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기를")'>사기를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("법무법인대범")'>법무법인대범</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("법적")'>법적</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("가짜")'>가짜</button><span class='kw-more' title='이런, 것도, 중요한, 것이, 계좌를, 만약, image, 그리고, 어떻게, 있어요, 가장, cafe'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="개인정보 보호법">개인정보 보호법</div>
+            <div class="bar"><div class="fill" style="width:90%"></div></div>
+            <div class="law-meta">법률 점유율: 90.3% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="개인정보 보호법 일부개정법률안(이해민의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">개인정보 보호법 일부개정법률안(이해민의원 등 12인)</span>
+                <span class="chip-pct">18.4%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div>
+            <div class="chip silver" title="개인정보 보호법 일부개정법률안(최민희의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">개인정보 보호법 일부개정법률안(최민희의원 등 12인)</span>
+                <span class="chip-pct">18.3%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div>
+            <div class="chip bronze" title="개인정보 보호법 일부개정법률안(김현의원 등 20인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">개인정보 보호법 일부개정법률안(김현의원 등 20인)</span>
+                <span class="chip-pct">18.3%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div></td>
+          <td class="num" data-val="5184">5184<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="25920">25920<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사칭")'>사칭</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기")'>사기</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해를")'>피해를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해")'>피해</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기를")'>사기를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("법무법인대범")'>법무법인대범</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("법적")'>법적</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("가짜")'>가짜</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이런")'>이런</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("것도")'>것도</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중요한")'>중요한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("것이")'>것이</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("계좌를")'>계좌를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("만약")'>만약</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("image")'>image</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("그리고")'>그리고</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("어떻게")'>어떻게</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있어요")'>있어요</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("가장")'>가장</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("cafe")'>cafe</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="개인정보 보호법 일부개정법률안(이해민의원 등 12인)">개인정보 보호법 일부개정법률안(이해민의원 등 12인)</div>
+                <div class="bill-code">PRC_I2G5G0O5P2N0O1M6L2L6T3U6S9S3R5</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">4778</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.599</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.778</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">최근 SKT 내부망이 해커의 공격을 받아 가입자 정보가 외부로 유출되는 보안 사고가 발생했음. 이는 대규모 피해로 이어질 수 있는 중대한 침해사고임에도 불구하고, 정보 주체인 이용자는 이 사실을 신속하고 충분하게 전달받지 못함. 사고 발생 후 4일이 지나서 회사 홈페이지 공지가 올라왔고, 개별 문자 안내는 5일이 지난 시점부터 이루어졌음. 통지 내용이 구체적이지 않아, 이용자가 사태의 심각성이나 향후 예상되는 위험 및 필요한 대응 방안을 제대로 인지할 수 없었음.
+
+  이처럼 침해사고 자체뿐 아니라, 사고 발생 이후 미흡한 후속 조치가 소비자 불안과 사회 혼란을 더욱 증폭시킨다는 지적이 있음.
+
+  이에 유출 항목에 대한 통지 내용을 구체화하고, 개별 통지를 의무화하고자 함. 또한 개인정보처리자가 사고 발생 후 후속 조치 계획을 수립하여 개인정보보호위원회 및 정보 주체에게 이를 알리도록 함으로써, 사고 수습과 재발 방지 체계에 대한 책임성을 강화하고자 함(안 제34조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="개인정보 보호법 일부개정법률안(최민희의원 등 12인)">개인정보 보호법 일부개정법률안(최민희의원 등 12인)</div>
+                <div class="bill-code">PRC_Q2Y5Z0X6V0W9V1V7D2D8C4A9B7Z6A0</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">4742</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.620</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.826</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 개인정보 유출 시 유출된 항목, 시점, 대응 조치 등 법정사항을 정보주체에게 개별적으로 통지하도록 정하면서 예외적인 경우 홈페이지 공지로 이를 갈음할 수 있도록 하고 있음.  
+
+  그러나, 개인정보처리자가 유출 사고에도 불구하고 법정 사항에 대한 개별적 통지 없이 홈페이지에 간략한 안내만을 게시한 것은 본인의 개인정보 유출 여부를 신속히 파악하기 어렵게 하고, 적절한 대응조치를 취할 기회를 놓치게 만들어 추가적인 유출 위험에 취약하다는 지적이 있음.
+
+  이에 유출된 개인정보의 정보주체를 특정할 수 없고, 유출 규모가 대통령령으로 정한 기준 이상일 경우에는 유출등이 확인된 정보주체 및 유출의 가능성이 있는 모든 정보주체에게 법정 통지사항을 개별적으로 통지할 것을 의무화하여 정보주체의 권리 보호를 강화하고, 개인정보처리자의 책임 있는 대응을 유도하려는 것임(안 제34조제2항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="개인정보 보호법 일부개정법률안(김현의원 등 20인)">개인정보 보호법 일부개정법률안(김현의원 등 20인)</div>
+                <div class="bill-code">PRC_N2M5L0K9X0S8R1Q6W0V6U3T0C5Z3Y8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">4736</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.622</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.827</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">최근 대규모 개인정보 유출 사고가 계속하여 발생함에 따라 정보주체의 피해를 실질적으로 구제할 수 있는 법적 장치의 강화가 요구되고 있음.
+
+  현행법은 정당한 사유가 있을 경우 개인정보 유출 시 정보주체에게 개별적으로 통지할 사항을 홈페이지 게시로 갈음할 수 있도록 하고 있는데 최근의 대규모 개인정보 유출 사례 등에서 개인정보처리자가 유출 사고에도 불구하고 법정 사항에 대한 개별적 통지 없이 홈페이지에 간략한 안내만을 게시한 바 있음. 이는 정보주체가 본인의 개인정보 유출 여부를 신속히 파악하기 어렵게 하고, 적절한 대응조치를 취할 기회를 놓치게 만들어 2차 피해나 금융사기 등의 추가적인 위험에 무방비로 노출될 우려가 큰 상황임. 
+
+  한편, 개인정보 유출로 인한 피해는 유출 직후 즉시 피해로 이어지기보다는 일정 시간이 경과한 후 스미싱, 금융사기, 명의도용 등 다양한 형태로 나타나고, 유출된 개인정보가 다수의 경로를 통해 이동ㆍ가공ㆍ재판매되기 때문에 피해자가 그 유출과 손해 사이의 인과관계를 직접 입증하는 데 현실적인 어려움이 존재함.
+
+  이에 대통령령으로 정하는 규모 이상의 정보주체에 관한 개인정보가 유출이 된 경우로서 유출이 된 개인정보의 항목을 확인할 수 없어 유출이 된 개인정보의 정보주체를 특정할 수 없을 때에는 유출의 가능성이 있는 모든 정보주체에게 법정 통지사항을 개별적으로 통지할 것을 의무함(안 제34조제2항 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="개인정보 보호법 일부개정법률안(인요한의원 등 13인)">개인정보 보호법 일부개정법률안(인요한의원 등 13인)</div>
+                <div class="bill-code">PRC_E2A5B0Z6Z1X6Y1W6F3F2D0E3C8D2B8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">4681</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.607</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.818</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 개인정보 유출 시 유출된 항목, 시점, 대응 조치 등 법정사항을 정보주체에게 개별적으로 통지하도록 정하면서 예외적인 경우 홈페이지 공지로 이를 갈음할 수 있도록 하고 있음.
+
+  그러나 유출된 개인정보의 정보주체를 특정할 수 없는 경우에 개인정보가 유출된 사실을 홈페이지 공지로 갈음하도록 하는 것은 정보주체가 본인의 개인정보 유출 여부를 신속히 파악하기 어렵게 하고, 적절한 대응조치를 취할 기회를 놓치게 만들어 개인정보보호에 미흡하다는 지적이 있음.
+
+  이에 대통령령으로 정하는 규모 이상의 정보주체에 관한 개인정보가 유출이 된 경우로서 유출이 된 개인정보의 정보주체를 특정할 수 없는 경우에는 유출이 확인되었거나 유출의 가능성이 있는 모든 정보주체에게 법정 통지사항을 개별적으로 통지할 것을 의무화하여 정보주체의 권리 보호를 강화하고, 개인정보처리자의 책임 있는 대응을 유도하려는 것임(안 제34조제2항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="개인정보 보호법 일부개정법률안(민병덕의원 등 14인)">개인정보 보호법 일부개정법률안(민병덕의원 등 14인)</div>
+                <div class="bill-code">PRC_R2S5Q0Q7O0P2O1V0W2U8V4T5U4S7T4</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">16.9%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">4377</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.571</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.815</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 개인정보 유출 시 그 대상자를 특정할 수 없는 경우 홈페이지 게시 등으로 개별 통지를 갈음할 수 있도록 하고 있음. 
+
+  그러나 최근 SKT 해킹 사고에서 드러난 바와 같이, 유심(USIM) 고유식별정보, 인증키 등 신원 인증에 활용되는 정보가 유출될 경우, 금융사기 등 2차 피해로 이어질 가능성이 매우 높음에도, 개인정보처리자의 늑장 대응으로 인해 개인정보 유출 사실이 정보주체에게 뒤늦게 통지되는 사례가 발생하고 있음.   
+
+  이에, 유출된 개인정보의 위험성이 크고 신속한 대응이 필요한 경우에는 피해자의 특정 여부와 관계없이, 개인정보처리자가 유출 우려가 있는 개인정보주체 전원에게 이를 개별 통지하도록 의무화하고, 그 대상이 되는 개인정보의 기준을 개인정보보호위원회 고시로 정하도록 함으로써 ‘제2의 SKT 해킹 사태’와 같은 사고 발생 시에도 개인정보 처리자와 정보주체의 신속한 대응이 가능하도록 해 개인정보 자기결정권을 실질적으로 보호하고자 함(안 제34조제2항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="김건희 주가조작 도이치모터스 여사 대통령 특검 윤석열 여사가 의혹 구속 여사의 특검팀은 여사는 특검은 삼부토건 수사 위반 것으로 전직 구속영장을">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">4</span>
+          </td>
+          <td class="topic">14</td>
+          <td class="tname"><div class="tname-text clamp-2" title="김건희 주가조작 의혹">김건희 주가조작 의혹</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("김건희")'>김건희</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("주가조작")'>주가조작</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("도이치모터스")'>도이치모터스</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사")'>여사</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대통령")'>대통령</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특검")'>특검</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("윤석열")'>윤석열</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사가")'>여사가</button><span class='kw-more' title='의혹, 구속, 여사의, 특검팀은, 여사는, 특검은, 삼부토건, 수사, 위반, 것으로, 전직, 구속영장을'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:68%"></div></div>
+            <div class="law-meta">법률 점유율: 69.0% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(장경태의원 등 27인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에…</span>
+                <span class="chip-pct">19.6%</span>
+              </div>
+              <div class="chip-bar"><div style="width:19%"></div></div>
+            </div>
+            <div class="chip silver" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(대안)(법제사법위원장)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에…</span>
+                <span class="chip-pct">19.5%</span>
+              </div>
+              <div class="chip-bar"><div style="width:19%"></div></div>
+            </div>
+            <div class="chip bronze" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(서영교의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에…</span>
+                <span class="chip-pct">18.2%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div></td>
+          <td class="num" data-val="3347">3347<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="16735">16735<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("김건희")'>김건희</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("주가조작")'>주가조작</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("도이치모터스")'>도이치모터스</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사")'>여사</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대통령")'>대통령</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특검")'>특검</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("윤석열")'>윤석열</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사가")'>여사가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("의혹")'>의혹</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("구속")'>구속</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사의")'>여사의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특검팀은")'>특검팀은</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여사는")'>여사는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특검은")'>특검은</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("삼부토건")'>삼부토건</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("수사")'>수사</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("위반")'>위반</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("것으로")'>것으로</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("전직")'>전직</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("구속영장을")'>구속영장을</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(장경태의원 등 27인)">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(장경태의원 등 27인)</div>
+                <div class="bill-code">PRC_F2A5Z0Y8W2E6D1E1D4C8J1I2H3I9H8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">19.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">3277</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.783</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.891</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">김건희와 명태균ㆍ건진법사 관련 국정농단 및 불법선거개입사건 등 진상규명을 위한 특별검사(이하 ‘김건희 특검’이라 함)는 지난 2025년 6월 12일 임명 후, 그 준비절차를 거쳐 본격적인 수사를 진행하고 있음.
+
+  김건희 특검은 도이치모터스 주가조작 의혹, 삼부토건 주가조작 의혹, 명태균씨가 연루된 공천 개입 의혹을 비롯해 수사대상이 16개로 매우 방대하고, 각 수사대상마다 서희건설 청탁 사건, 통일교 뇌물수수 및 정치관여사건 등 새로운 인지사건과 의혹도 늘어나고 있는 상황임. 최근에 드러난 관봉권 띠지 분실사건 및 이에 대한 수사 은폐의혹 사건에 대해서는 수사대상에 명확히 포함되어 있지 않은 상황임. 이에 새로 드러난 의혹 및 김건희와 그 측근들에 대한 고소ㆍ고발사건을 수사대상에 추가하고자 함.
+
+  또한 현행법의 경우 ‘관련 사건’에 대한 규정이 없는바, 관련사건 범위에 대한 해석상의 논란을 줄이기 위해 정의규정을 신설하고자 함
+
+  아울러, 이와 같이 김건희 및 그 측근들과 관련된 광범위하고 중대한 사안을 조사ㆍ공소유지하는 데에는 인적 자원이 부족하다는 지적이 지속되어 왔음. 특히 방대한 수사기록 검토, 증거분석, 관련자 조사 및 공판 준비 등 복합적인 업무를 수행하기 위해서는 다수의 전문인력이 필요하나, 현행 파견인원 한도는 수사 효율성과 신속성 확보에 한계가 있음. 또한, 김건희에 대한 사건이 광범위하고 점차 늘어나고 있는 상황이라 진상규명에는 기간이 부족하다는 지적이 있음. 
+
+  이에 수사기간 연장횟수를 늘려 특검 수사의 실효성을 제고하고자 하며, 특별검사보를 기존 4명에서 6명으로, 파견검사의 상한을 40명에서 70명으로 확대하여 특별검사의 수사와 공판 업무를 충실히 지원할 수 있도록 함으로써, 김건희 및 그 측근들의 국정농단 및 비리에 관한 진상규명과 공소유지의 실효성을 제고하고자 함. 
+
+  또한 파견검사도 특별검사의 지휘에 따라 특별검사 및 특별검사보의 재정없이 공소유지가 가능하게 함으로서 원활한 공소유지 및 공소업무 수행을 도모하고자 함.
+
+  또한, 현행법은 수사기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하지 못한 사건을 관할 지방검찰청 검사장에게 인계하도록 되어 있는 바, 검찰청 법에 의한 검사의 수사 범위 제한으로 인해 검찰의 수사대상이 아닌 범죄가 있을 수 있어 이 경우 다른 법률에 우선하여 국가수사본부가 수사를 하도록 하며, 특별검사의 지휘아래 수사를 완료하도록 함.
+
+  아울러 광범위한 김건희특검의 수사대상에 관한 진상규명을 위해서는 이와 관련된 자의 진술, 증언 및 자료제출이 매우 중요한바, 이 법의 수사대상과 관련하여 자수를 하거나, 이 법의 죄를 범한 자가 이 법의 죄를 범한 타인을 고발하거나, 타인이 이 법의 죄를 범하는 것을 방해하거나, 사건의 파악에 중요한 진술 또는 증언을 할 경우 그 형을 감면해주는 조항을 신설하고자 함
+
+
+
+
+
+주요내용
+
+
+
+가. 수사대상에 새로 드러난 의혹(관봉권 띠지와 관련된 수사기관의 은폐 사건, 김건희 및 그 측근의 MBC 및 YTN에 대한 경영간섭 및 탄압 의혹 사건) 및 김건희와 그 측근들에 대한 고소ㆍ고발 사건을 추가함(안 제2조제1항제14호,제17호 및 제18호)
+
+나. 관련사건 범위에 대한 해석상의 논란을 줄이기 위해 ‘정의규정’ 신설(안 제2조제3항) 
+
+다. 파견검사의 상한을 40명에서 70명으로, 파견공무원의 상한을 80명에서 140명으로 확대하여 특별검사의 수사와 공판 업무를 충실히 지원할 수 있도록 함(안 제6조제5항)
+
+라. 특별검사보를 현행법상 상한 4명에서 추가적으로 2명을 임명할 수 있게 하여, 특검보 인원 상한을 6명으로 증원(안 제7조제2항) 
+
+마. 파견검사도 특별검사의 지휘에 따라 특별검사 및 특별검사보의 재정 없이 공소유지가 가능하게 함(안 제7조제8항).
+
+바. 특별검사는 제2항의 기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하기 어려운 경우에는 1회에 한하여 수사기간을 30일이 연장할 수 있도록 한 규정을, 2회에 걸쳐 연장할 수 있도록 개정함(안 제9조제3항).
+
+사. 수사기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하지 않은 사건을 다른 법률에 불구하고 국가수사본부에게 인계를 하고, 국가수사본부가 특별검사의 지휘 아래 수사를 진행하도록 하도록 함(안 제9조제6항 및 제7항)
+
+아. 제2조제1항 각 호의 사건과 관련하여 「형법」이나 그 밖의 법률을 위반한 자가 이 법의 죄를 범한 후 자수한 때, 이 법의 죄를 범한 자가 이 법의 죄를 범한 타인을 고발하거나 타인이 이 법의 죄를 범하는 것을 방해한 때, 수사ㆍ재판절차에서 해당 사건에 관한 다른 사람의 범죄를 규정하는 주요 진술 또는 증언이나, 그 밖의 자료제출행위 또는 범인검거를 위한 제보와 관련하여 자신의 범죄로 처벌되는 경우 그 형을 감경 또는 감면할 수 있도록 하는 조항을 신설함(안 제24조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(대안)(법제사법위원장)">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(대안)(법제사법위원장)</div>
+                <div class="bill-code">PRC_J2E5W0X9P0F3F2Z0E2Z4R5K0Y8Z5N4</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">19.5%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">3270</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.787</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.897</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>대안의 제안이유</span></div>
+                <div class="summary clamp-6">김건희와 명태균ㆍ건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사(이하 ‘김건희 특검’이라 함)는 지난 2025년 6월 12일 임명 후, 그 준비절차를 거쳐 본격적인 수사를 진행하고 있음.
+
+  김건희 특검은 도이치모터스 주가조작 의혹, 삼부토건 주가조작 의혹, 명태균씨가 연루된 공천 개입 의혹을 비롯해 수사대상이 16개로 매우 방대하고, 각 수사대상마다 서희건설 청탁 사건, 통일교 뇌물수수 및 정치관여사건 등 새로운 인지사건과 의혹도 늘어나고 있는 상황임. 또한 현행법의 경우 ‘관련 범죄행위’에 대한 규정이 없는바, 관련 범죄행위의 범위에 대한 해석상의 논란을 줄이기 위해 정의규정을 신설하고자 함.
+
+  또한, 김건희 및 그 측근들과 관련된 광범위하고 중대한 사안을 조사ㆍ공소유지하는 데에는 인적 자원이 부족하다는 지적이 지속되어 왔음. 특히 방대한 수사기록 검토, 증거분석, 관련자 조사 및 공판 준비 등 복합적인 업무를 수행하기 위해서는 다수의 전문인력이 필요하나, 현행 파견인원 한도는 수사 효율성과 신속성 확보에 한계가 있음. 또한, 김건희에 대한 사건이 광범위하고 점차 늘어나고 있는 상황이라 진상규명에는 기간이 부족하다는 지적이 있음. 
+
+  이에 수사기간 연장횟수를 늘려 특검 수사의 실효성을 제고하고자 하며, 특별검사보를 기존 4명에서 6명으로, 파견검사의 상한을 40명에서 70명으로 확대하는 등 특별검사의 수사와 공판 업무를 충실히 지원할 수 있도록 함으로써, 김건희 및 그 측근들의 국정농단 및 비리에 관한 진상규명과 공소유지의 실효성을 제고하고자 함. 
+
+  이에 더해, 대법원 전원합의체 판결(2019. 8. 29. 선고 2018도13792)의 취지에 따라 파견검사도 특별검사 또는 특별검사보의 지휘에 따라 특별검사 및 특별검사보의 재정 없이 공소유지가 가능하게 함으로서 원활한 공소유지 및 공소업무 수행을 도모하고자 함.
+
+  아울러, 현행법은 수사기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하지 못한 사건을 관할 지방검찰청 검사장에게 인계하도록 되어 있는바, 「검찰청법」에 의한 검사의 수사 범위 제한으로 인해 검찰의 수사대상이 아닌 범죄가 있을 수 있어 이 경우 다른 법률에 우선하여 사건을 국가수사본부장에게 인계하도록 하며, 국가수사본부 사법경찰관이 특별검사의 지휘 아래 수사를 완료하고 관할 지방검찰청 검사장에게 사건을 송치하도록 함.
+
+  아울러 광범위한 김건희특검의 수사대상에 관한 진상규명을 위해서는 이와 관련된 자의 진술, 증언 및 자료 제출이 매우 중요한바, 이 법의 수사 대상과 관련하여 자수를 하거나, 이 법의 죄를 범한 자가 이 법의 죄를 범한 타인을 고발하거나, 타인이 이 법의 죄를 범하는 것을 방해하거나, 사건의 파악에 중요한 진술 또는 증언을 할 경우 그 형을 감면해주는 조항을 신설함.
+
+
+
+대안의 주요내용
+
+
+
+가. 관련 범죄행위의 범위에 대한 해석상의 논란을 줄이기 위해 ‘정의규정’을 신설함(안 제2조제3항 신설). 
+
+나. 특별검사보 인원을 현행 4명에서 6명으로 증원(안 제7조제1항 전단)하고, 파견검사의 상한을 40명에서 70명으로, 파견공무원의 상한을 80명에서 140명으로 확대(안 제6조제5항 단서)하여 특별검사의 수사와 공판 업무를 충실히 지원할 수 있도록 함.
+
+다. 파견검사도 특별검사나 특별검사보의 지휘ㆍ감독에 따라 특별검사 및 특별검사보의 재정 없이 공소유지가 가능하게 함(안 제7조 제목 및 제7조제2항 후단 신설).
+
+라. 특별검사는 제2항의 기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하기 어려운 경우에는 1회에 한하여 수사기간을 30일 연장할 수 있도록 한 조항을 2회에 걸쳐 각 30일씩 연장할 수 있도록 함(안 제9조제3항).
+
+마. 수사기간 이내에 수사를 완료하지 못하거나 공소제기 여부를 결정하지 못한 사건을 다른 법률에 우선하여 이 법에 따라 국가수사본부장에게 인계를 하고, 사건을 배당받은 국가수사본부 사법경찰관은 특별검사의 지휘 아래 수사를 완료하며, 범죄의 혐의가 있다고 인정되는 경우 지체 없이 관할 지방검찰청 검사장에게 사건을 송치하도록 하도록 함(안 제9조제6항 전단 및 제7항, 제9조제8항 신설).
+
+바. 「법원조직법」 제57조 단서에도 불구하고 제2조제1항 각 호의 사건에 대한 재판의 심리와 판결을 공개하고, 재판장은 특별한 사정이 없으면 중계를 허가하도록 하며, 제4항에 따라 재판을 중계하는 경우 개인정보 등을 포함한 재판 내용에 대한 비식별조치를 하지 아니하여도 되며, 관계 공무원은 고의 또는 중대한 과실로 인한 것이 아니면 민·형사상 책임을 지지 아니하도록 함(안 제10조제3항부터 제6항까지 신설).
+
+사. 제2조제1항 각 호의 사건과 관련하여 「형법」이나 그 밖의 법률을 위반한 자가 이 법의 죄를 범한 타인을 고발하거나 타인이 이 법의 죄를 범하는 것을 방해한 때 그 형을 감경 또는 면제할 수 있도록 하되, 이 법의 죄를 범한 후 자수한 때 및 수사ㆍ재판절차에서 해당 사건에 관한 다른 사람의 범죄를 규명하는 주요 진술 또는 증언이나, 그 밖의 자료제출행위 또는 범인검거를 위한 제보와 관련하여 자신의 범죄로 처벌되는 경우에는 그 형을 감경 또는 면제하여야 하는 조항을 신설함(안 제24조 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(서영교의원 등 12인)">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(서영교의원 등 12인)</div>
+                <div class="bill-code">PRC_K2G5E0D8C1K9J1K5I3H8P0N8Q8Q9Q4</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.2%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">3049</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.745</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.838</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따른 특별검사는 지난 2025년 6월 12일 임명 후, 그 준비절차를 거쳐 본격적인 수사를 진행하고 있음.
+
+  그런데 김건희 특검은 도이치모터스 주가조작 의혹, 삼부토건 주가조작 의혹, 명태균씨가 연루된 공천 개입 의혹을 비롯해 수사대상이 16개로 방대하고, 각 수사대상마다 IMS모빌리티 사건, 서희건설 청탁 사건 등 새로운 인지사건과 의혹도 늘어나 점점 수사량이 확대됨에 따라 수사인력과 수사기간의 연장이 필요하다는 지적이 제기되고 있음.
+
+  이에 파견검사의 수를 40명에서 70명으로, 파견검사를 제외한 파견공무원의 수는 80명에서 140명 이내로 수사인력을 확충하고, 특검의 기본 수사기간을 90일에서 120일로 연장하여 김건희 국정농단의 실체를 끝까지 규명하고 책임자를 처벌하고자 함(안 제6조제5항 및 제9조제2항).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(김용민의원 등 20인)">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(김용민의원 등 20인)</div>
+                <div class="bill-code">PRC_M2N5L0K8J2E0F1E0C3B4J4I2J2H0G7</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">11.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">1903</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.706</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.786</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 김건희와 그 측근들의 주가조작, 허위경력, 명태균ㆍ건진법사 연루 사건 등을 수사 대상으로 규정하고 있고, 특별검사보는 특별검사의 지휘ㆍ감독에 따라 각 호의 사건과 관련된 수사 및 공소제기된 사건의 공소유지를 담당하고 특별수사관 및 관계 기관으로부터 파견받은 공무원에 대한 지휘ㆍ감독을 함.
+
+  그러나 최근 김건희와 측근 김예성 등이 대기업ㆍ금융사 등으로부터 투자ㆍ협찬 등 부정한 이익을 취득하였다는 의혹 제기됨. 현행 수사대상에 명시되어 있지 않아 실체 규명 한계 있음. 특검이 수사기간 중 인지사건에 착수한 경우, 해당 수사 및 수집한 증거의 적법성에 불필요한 논란이 발생할 소지 있음. 또한 피의자가 형사처분을 면할 목적으로 장기간 해외 체류하는 경우, 수사기간 만료로 수사가 종결되거나 공소시효가 완성되는 문제 있음.
+
+  아울러, 대법원 전원합의체 판결(2019. 8. 29. 선고 2018도13792)에 따르면 파견검사는 특별검사 또는 특별검사보의 지휘ㆍ감독을 받아 공소유지에 관여할 수 있으나 최근 내란 재판에서 피고인 측 변호인단이 “공소 유지 자격이 없다”라며 특검보와 파견검사의 공소유지 권한을 부인하는 등 소송진행을 지연시키는 사례가 발생함.
+
+  이에 부정한 이익 수수 의혹을 수사대상에 추가하고, 특검 수사인력 규모를 확대하며, 피의자의 해외 체류로 인한 수사 지연 시 수사기간 종료 후 계속 수사와 공소시효 정지 규정을 신설함. 또 개정으로 새롭게 포함된 사건에 대해 개정 이전의 인지ㆍ수사 행위도 적법한 정식 수사로 인정하고, 수집한 증거의 효력을 명확히 함. 이를 통해 특검 수사가 실질적ㆍ완결적으로 이루어질 수 있도록 함. 그리고 특검법, 형사소송법, 검찰청법 등에 의해 이미 인정되는 파견검사의 특별검사와 특별검사보의 재정 없는 공소유지권에 대하여 이를 확인하는 선언적 규정을 명확히 규정하려는 것임(안 제2조, 제6조제5항, 제7조제2항, 제9조의2 및 제9조의3).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(신장식의원 등 11인)">김건희와 명태균·건진법사 관련 국정농단 및 불법 선거 개입 사건 등 진상규명을 위한 특별검사 임명 등에 관한 법률 일부개정법률안(신장식의원 등 11인)</div>
+                <div class="bill-code">PRC_B2W5X0V8T2U8S1T1B5B1A0Y3Z4X2Y8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">0.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">45</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.622</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.696</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따른 특별검사는 2025년 6월 12일 임명된 이후 약 70여 일간 수사를 진행하고 있으며, 최근 IMS모빌리티 사건, 서희건설 청탁 사건 등 새로운 인지 사건이 계속하여 발생하고 있음.
+
+  한편 8월 20일 기준 이종호, 김예성, 이일준, 이응근, 윤영호, 이성재 등 사건 관련자들에 대한 구속기소가 이루어지는 등 수사 및 공소유지 업무가 확장되고 있는 상황임.
+
+  이에 따라, 재판 과정에서 공소유지와 신규 수사를 위한 충분한 인력 확보가 필요함에도 불구하고, 현행법상 특별검사보와 파견검사, 파견 공무원의 인원이 한정되어 있어 원활한 수사와 재판 대응에 어려움이 있는 실정임.
+
+  이에 특별검사보의 수를 4명에서 6명으로 확대하고, 파견검사의 수를 40명에서 60명으로, 파견검사를 제외한 파견 공무원의 수를 80명에서 120명 이내로 증원하며, 특검의 기본 수사기간을 90일에서 180일로 연장하여 보다 실질적이고 완결적인 수사가 이루어질 수 있도록 하고자 함(안 제6조제5항, 제7조 및 제9조).
+
+  아울러 수사대상에 관한 압수, 수색 또는 검증 등 수사 및 재판에 필요한 증거를 수집함에 있어서 「형사소송법」 제110조, 제111조, 제112조 및 이를 준용하는 제219조를 적용하지 아니하게 하고, 각 군, 대통령비서실, 대통령경호처가 압수, 수색 또는 검증 등 수사 및 재판에 필요한 증거의 수집을 거부하거나 방해할 수 없도록 하여 원활한 수사가 진행될 수 있도록 함(안 제9조의2 신설).
+
+  또한 특별검사 사건의 재판은 공개 심리를 원칙으로 하고, 중계 및 속기ㆍ녹음ㆍ영상녹화를 의무화하여 재판의 투명성을 확보하여 국민의 알 권리를 충족하고자 함(안 제10조제3항부터 제5항까지 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="이준석 이재명 후보는 후보의 대선 후보가 후보 후보를 여성 개혁신당 발언을 x000d 대통령 고발 민주당 대한 발언 혐의로 했다 대해">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">5</span>
+          </td>
+          <td class="topic">26</td>
+          <td class="tname"><div class="tname-text clamp-2" title="대선 후보 발언 고발">대선 후보 발언 고발</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이준석")'>이준석</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재명")'>이재명</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보는")'>후보는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보의")'>후보의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대선")'>대선</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보가")'>후보가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보")'>후보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보를")'>후보를</button><span class='kw-more' title='여성, 개혁신당, 발언을, x000d, 대통령, 고발, 민주당, 대한, 발언, 혐의로, 했다, 대해'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률">정보통신망 이용촉진 및 정보보호 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:18%"></div></div>
+            <div class="law-meta">법률 점유율: 18.3% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한민수의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한민수의원 등 12인)</span>
+                <span class="chip-pct">5.2%</span>
+              </div>
+              <div class="chip-bar"><div style="width:5%"></div></div>
+            </div>
+            <div class="chip silver" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(최수진의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(최수진의원 등 12인)</span>
+                <span class="chip-pct">1.9%</span>
+              </div>
+              <div class="chip-bar"><div style="width:1%"></div></div>
+            </div>
+            <div class="chip bronze" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(박상혁의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(박상혁의원 등 10인)</span>
+                <span class="chip-pct">1.7%</span>
+              </div>
+              <div class="chip-bar"><div style="width:1%"></div></div>
+            </div></td>
+          <td class="num" data-val="1850">1850<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="9250">9250<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이준석")'>이준석</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재명")'>이재명</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보는")'>후보는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보의")'>후보의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대선")'>대선</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보가")'>후보가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보")'>후보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보를")'>후보를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("여성")'>여성</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("개혁신당")'>개혁신당</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("발언을")'>발언을</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("x000d")'>x000d</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대통령")'>대통령</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("고발")'>고발</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민주당")'>민주당</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대한")'>대한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("발언")'>발언</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("혐의로")'>혐의로</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("했다")'>했다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대해")'>대해</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한민수의원 등 12인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(한민수의원 등 12인)</div>
+                <div class="bill-code">PRC_K2S5R0S9Q0P9L1W5S0R6P5O3P8X6W8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">5.2%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">477</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.688</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.826</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 정보통신서비스 제공자는 침해사고가 발생하면 즉시 그 사실을 과학기술정보통신부장관이나 한국인터넷진흥원에 신고하도록 규정하고 있으며, 침해사고의 발생을 알게 된 때부터 24시간 이내에 신고하도록 시행령에서 규정하고 있음.
+
+  그런데 최근 통신사 해킹 사고와 관련하여 해당 정보통신서비스 제공자가 사고 발생 사실을 알았음에도 24시간 이내 신고 의무를 위반하고 개인정보 유출 사실을 늦게 공지하여 피해 확산에 대한 이용자의 불안이 심화되고 있음.
+
+  이에 시행령에 규정된 침해사고의 신고 시기와 관련된 사항을 법률로 상향하여 규정함으로써 신고의무 위반에 대한 사업자의 책임을 명확히 하고 신고 지연으로 인한 이용자 피해의 예방과 침해사고에 대한 신속한 대응을 위한 법적 기반을 마련하려는 것임(안 제48조의3제1항 및 제4항).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(최수진의원 등 12인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(최수진의원 등 12인)</div>
+                <div class="bill-code">PRC_H2H5F0G9F0M2N1L3M4K9L3J2F5F1E0</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.9%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">174</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.697</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.811</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 과학기술정보통신부장관은 해킹 등 중대한 침해사고의 원인분석과 사고대응을 위해 민ㆍ관합동조사단을 구성할 수 있도록 하고 있으며, 정보통신서비스 제공자에게 침해사고 관련 자료의 제출을 요구할 수 있는 권한을 가지고 있음.
+
+  그러나 민ㆍ관합동조사단의 사업장 출입 및 자료요청 권한의 경우 중대한 침해에만 한정하고 있으며, 이에 대한 판단이 모호해 법적 혼란과 함께 적극적인 사고대응을 할 수가 없는 문제가 발생하고 있음.    또한 해킹사고가 발생해 국민적인 피해가 확산되고 있지만 정보통신서비스 제공자가 자료를 제대로 제출하지 않는 경우가 많아 현행 자료제출 관련 의무조항을 강화할 필요가 있음.
+
+  이에 침해사고 관련 적극적인 피해 확산 방지와 사고대응을 위해 민ㆍ관합동조사단의 조사 권한과 정보통신서비스 제공자에 대한 자료 제출 의무를 강화하여 정보통신망의 안전성과 신뢰성을 제고하고자 함(안 제48조의4제6항 및 제64조제3항).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(박상혁의원 등 10인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(박상혁의원 등 10인)</div>
+                <div class="bill-code">PRC_O2P5W0X8W2W7U0T9U2B3C5B0B8Z9Y7</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.7%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">161</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.719</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.823</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 과학기술정보통신부장관은 중대한 침해사고가 발생한 경우 민ㆍ관합동조사단을 구성하여 침해사고의 원인을 분석할 수 있으며, 정보통신서비스 제공자에게 침해사고 관련 자료의 제출을 요구할 수 있는 권한을 가지고 있음.
+
+  그러나 정보통신서비스 제공자가 침해사고 관련 자료를 제출하지 아니하거나 거짓으로 제출하더라도 1천만원 이하의 과태료 부과에 그치고 있고, 사업자의 자의적인 협조에 상당 부분 의존하는 상황임. 따라서 사고 은폐나 축소 가능성이 있는 만큼 조사의 강제력을 확보할 필요가 있다는 의견이 제기됨.
+
+  이에 침해사고 관련 자료제출 의무의 실효성을 확보하기 위하여 자료제출 의무를 이행하지 않을 경우 이행강제금을 부과할 수 있는 근거를 마련함으로써 정보통신망의 안전성과 신뢰성을 제고하고자 함(안 제48조의7 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이해민의원 등 12인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(이해민의원 등 12인)</div>
+                <div class="bill-code">PRC_O2M5L0L5T2U0S1T6R3S0Q3M6M9K1M0</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">131</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.715</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.786</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 사이버 침해사고가 발생할 경우, 과학기술정보통신부장관(이하 ‘과기부 장관’)은 민ㆍ관합동조사단을 구성하여 사고 원인을 분석하고, 관련 사업자에게 자료 제출 및 현장 조사에 협조할 것을 요구할 수 있음.
+
+  그러나 사업자가 과기부 장관의 협조 요청을 거부하거나 거짓 자료를 제출하는 등 불성실한 태도로 임하더라도 1천만 원 이하의 과태료 외에는 실질적인 제재 수단이 없음. 이 때문에 국민 피해 및 구제와 직결되는 조사의 실효성이 크게 떨어진다는 지적이 꾸준히 제기되고 있음.
+
+  이에 장관이 사업자의 자료 제출 거부나 현장 조사 방해 등에 대해 이행강제금을 부과할 수 있도록 하여, 조사의 실효성을 담보하고, 사고 은폐나 축소 시도 등을 막고자 함(안 제48조의7 신설 및 제76조제3항제11호의3ㆍ제12호 삭제).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(강승규의원 등 10인)">정보통신망 이용촉진 및 정보보호 등에 관한 법률 일부개정법률안(강승규의원 등 10인)</div>
+                <div class="bill-code">PRC_U2V5U0U5S1T3I1G6H5F6G3E8F3N2N6</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">119</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.710</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.820</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따르면 정보통신서비스 제공자는 침해사고가 발생한 경우 즉시 과학기술정보통신부장관이나 한국인터넷진흥원에 신고하여야 하고, 과학기술정보통신부장관은 해당 정보통신서비스 제공자에게 필요한 조치의 이행을 명령하고 보완이 필요한 사항에 대해 시정을 명할 수 있도록 하고 있으며, 이를 위반하는 경우 과태료를 부과하고 있음.
+
+  그런데 최근 대규모 개인정보 유출 및 네트워크 침해사고가 발생했음에도 해당 사업자는 즉시 신고를 하지 않았고 사고 후 신속한 대응도 이루어지지 않아 침해사고로 인한 피해 확산 우려가 커지고 있음. 침해사고로 인한 개인정보유출 등 피해는 국민 생활과 직결되는 만큼 침해사고에 대한 사업자의 책임을 강화할 필요가 있음.
+
+  이에 정보통신서비스 제공자가 침해사고의 발생 사실을 과학기술정보통신부장관이나 한국인터넷진흥원에 신고하지 아니하거나 과학기술정보통신부장관의 시정명령을 이행하지 아니하는 경우 적용되는 현행 과태료 규정을 벌칙으로 상향함으로써 침해사고의 예방 및 신속한 대응을 위한 법적 구속력을 강화하고자 함(안 제71조 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="지원금 소비쿠폰 민생회복 민생지원금 지급 소득 신청 공식 계산기 상위 25만원 1차 인구감소지역 국민 건강보험료 정부 1인당 2차 일반 추가">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">6</span>
+          </td>
+          <td class="topic">28</td>
+          <td class="tname"><div class="tname-text clamp-2" title="민생회복 지원금 지급 기준 및 계산법">민생회복 지원금 지급 기준 및 계산법</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("지원금")'>지원금</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("소비쿠폰")'>소비쿠폰</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민생회복")'>민생회복</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민생지원금")'>민생지원금</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("지급")'>지급</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("소득")'>소득</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("신청")'>신청</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("공식")'>공식</button><span class='kw-more' title='계산기, 상위, 25만원, 1차, 인구감소지역, 국민, 건강보험료, 정부, 1인당, 2차, 일반, 추가'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="소득세법">소득세법</div>
+            <div class="bar"><div class="fill" style="width:32%"></div></div>
+            <div class="law-meta">법률 점유율: 32.5% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="소득세법 일부개정법률안(민병덕의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">소득세법 일부개정법률안(민병덕의원 등 10인)</span>
+                <span class="chip-pct">18.8%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div>
+            <div class="chip silver" title="소득세법 일부개정법률안(맹성규의원 등 14인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">소득세법 일부개정법률안(맹성규의원 등 14인)</span>
+                <span class="chip-pct">13.7%</span>
+              </div>
+              <div class="chip-bar"><div style="width:13%"></div></div>
+            </div>
+            <div class="chip bronze" title="소득세법 일부개정법률안(정부)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">소득세법 일부개정법률안(정부)</span>
+                <span class="chip-pct">0.0%</span>
+              </div>
+              <div class="chip-bar"><div style="width:0%"></div></div>
+            </div></td>
+          <td class="num" data-val="1366">1366<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="6830">6830<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("지원금")'>지원금</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("소비쿠폰")'>소비쿠폰</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민생회복")'>민생회복</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민생지원금")'>민생지원금</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("지급")'>지급</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("소득")'>소득</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("신청")'>신청</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("공식")'>공식</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("계산기")'>계산기</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("상위")'>상위</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("25만원")'>25만원</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("1차")'>1차</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("인구감소지역")'>인구감소지역</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("국민")'>국민</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("건강보험료")'>건강보험료</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("정부")'>정부</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("1인당")'>1인당</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("2차")'>2차</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("일반")'>일반</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("추가")'>추가</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="소득세법 일부개정법률안(민병덕의원 등 10인)">소득세법 일부개정법률안(민병덕의원 등 10인)</div>
+                <div class="bill-code">PRC_S2Q5R0Z7X2Y9W1W4V3W7R4S0Q1P0P8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">18.8%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">1284</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.628</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.738</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">코로나 재난지원금, 민생회복지원금 등 정부가 국민에게 무상으로 지원하는 현금성 자산과 관련하여 선별적으로 지급할 것인지 보편적으로 지급할 것인지 논란이 되어 왔음. 
+
+  선별적 지급은 경제적 어려움에 직면한 소상공인과 취약계층을 더 두텁게 지원할 수 있는 장점이 있으나 지급에 소요되는 시간과 행정비용이 증가하는 문제가 있음. 
+
+  이러한 상황에서 국가 지원금을 보편적으로 지급하되 이에 대하여 소득세를 부과하는 경우 신속하고 공평한 지급이 가능함.
+
+  또한 정부가 소상공인 등의 장기 채무를 탕감하는 경우 사업자인 수혜자는 채무탕감 받은 금액을 이월결손금과 상계하도록 하면 과도한 세제상 이중혜택을 배제함으로써 국가 재정에 미치는 부정적인 영향을 완화할 수 있을 것임.   
+
+  이에 국가나 지방자치단체가 긴급한 현안을 해결하기 위하여 무상으로 지급하는 현금성 지원금에 상당하는 금액을 기본공제금액에서 차감하도록 하고 국가가 사업자의 채무를 면제해줌으로써 발생한 채무면제이익을 이월결손금의 보전에 충당하도록 하려는 것임.
+
+
+
+
+
+주요내용
+
+
+
+가. 국가 또는 지방자치단체가 사업자의 채무를 면제ㆍ소멸하여 줌으로써 발생한 부채의 감소액이 있는 경우 이월결손금 보전에 충당하도록 하고, 충당된 이월결손금은 소득금액에서 공제하는 이월결손금에서 제외하도록 함(안 제45조의2 신설).
+
+나. 과세표준 산출 과정에서 거주자에게 제공되는 1인당 연 150만원의 기본공제에서 국가나 지방자치단체가 긴급한 현안을 해결하기 위하여 무상으로 지급하는 지원금 상당액을 공제금액에서 차감함(안 제50조제1항단서 신설).  
+
+다. 비거주자에 대한 국가나 지방자치단체가 긴급한 현안을 해결하기 위하여 무상으로 지급하는 지원금은 기타소득으로 원천징수하도록 함(안 제119조제12호하목 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="소득세법 일부개정법률안(맹성규의원 등 14인)">소득세법 일부개정법률안(맹성규의원 등 14인)</div>
+                <div class="bill-code">PRC_I2G5I0G6G1E7F1N5L0M8K2L0J1K9Z6</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">13.7%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">936</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.590</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.696</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">코로나-19 팬데믹과 민생 경제 위기 등 국가적 위기 상황에서 국가가 국민에 일시적지원금을 지급하려 하였으나, 지급 대상을 두고 논란이 발생하여 신속한 지급에 차질이 발생한 바 있음.
+
+  일시적지원금 지급 시 지급 대상을 선별할 경우 이에 소요되는 시간과 비용 등을 고려할 때 지급 시기가 늦어질 수밖에 없으므로, 지급 대상 선별 없이 일시적 지원금을 지급한 후 고소득자에 대해서만 환수하는 방식을 마련할 필요가 있음.
+
+  이에 종합소득금액이 일정 금액 이상인 거주자의 기본공제 금액을 해당 거주자가 지급받은 일시적 지원금의 범위에서 감액할 수 있도록 규정하려는 것임(안 제50조제4항 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="소득세법 일부개정법률안(정부)">소득세법 일부개정법률안(정부)</div>
+                <div class="bill-code">ARC_M2T5D0M9U0C3U1E5Z3R3N5P4I2F4P3</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">0.0%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">1</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.655</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.655</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">자녀 양육비 부담 완화를 위하여 기업 등의 출산ㆍ보육비 지원금 비과세 대상ㆍ한도 확대, 초등학교 저학년 예체능 학원비 세액공제 등 출산ㆍ보육에 대한 세제지원을 강화하고, 안정적인 노후생활 지원을 위하여 연금소득에 대한 원천징수세율을 인하하며, 사업소득 연말정산 대상자의 일시 납부 부담을 완화하기 위하여 연말정산 사업소득에 대한 추가 납부세액 분납을 허용하는 한편, 
+
+  국외 주식 등에 대한 국내 과세권 확보 및 자산간 과세형평을 위하여 국외 전출에 따른 양도소득세 과세 대상에 국외 주식 등을 추가하는 등 현행 제도의 운영상 나타난 일부 미비점을 개선ㆍ보완하려는 것임.
+
+
+
+
+
+주요내용
+
+
+
+가. 임목의 벌채 또는 양도로 발생하는 소득에 대한 비과세 한도 상향(안 제12조제2호)
+
+  조림기간 5년 이상인 임지(林地)의 임목(林木)의 벌채 또는 양도로 발생하는 소득에 대한 비과세 한도를 연 600만원에서 연 3천만원으로 상향함.
+
+나. 출산 및 육아에 대한 세제지원 강화(안 제12조제3호 및 제5호)
+
+  1) 「사립학교교직원 연금법」 제60조의4에 따라 교직원으로 보는 자가 소속기관의 정관 또는 규칙에 따라 받는 육아휴직수당 등도 근로자나 공무원 등의 경우와 마찬가지로 소득세를 과세하지 아니하도록 함.
+
+  2) 근로자 또는 종교 관련 종사자 본인이나 그 배우자의 출산 및 6세 이하 자녀의 보육과 관련하여 사용자로부터 받는 급여 또는 종교단체로부터 받는 금액에 대한 비과세 한도를 월 20만원에서 해당 자녀 1명당 월 20만원으로 상향함.
+
+다. 간접투자소득에 대한 외국납부세액공제 적용 대상 확대(안 제57조의2제1항ㆍ제2항, 안 제129조제8항부터 제10항까지 신설)
+
+  연금계좌를 통하여 간접투자회사 등으로부터 지급받는 소득에 대해서도 그 지급받은 금액에 대하여 간접투자회사 등이 외국에 납부한 세액이 있는 경우 간접투자소득에 대한 외국납부세액공제를 적용받을 수 있도록 함.
+
+라. 교육비 세액공제 확대(안 제59조의4제3항)
+
+  1) 근로소득 있는 거주자가 기본공제 대상자인 직계비속 등을 위하여 교육비를 지급하는 경우 해당 기본공제 대상자의 소득에 관계 없이 세액공제를 받을 수 있도록 함.
+
+  2) 근로소득이 있는 거주자가 기본공제 대상자인 직계비속 중 과세기간 종료일 현재 9세 미만 또는 2학년 이하인 초등학생을 위하여 예능을 교습하는 학원 및 체육시설에 지급한 교육비를 세액공제 대상에 포함하도록 함.
+
+마. 양도소득의 필요경비 계산 특례 적용 예외 대상 추가(안 제97조의2제1항)
+
+  양도일부터 소급하여 10년 이내에 배우자 또는 직계존비속으로부터 증여받은 자산을 양도하는 경우 증여자의 당초 취득가액을 해당 자산의 취득가액으로 하는 양도소득 필요경비 계산 특례를 적용할 때, 양도 당시 증여자인 직계존비속이 사망한 경우에는 배우자가 사망한 경우와 마찬가지로 해당 특례를 적용하지 아니하도록 함.
+
+바. 국외 전출에 따른 양도소득세 과세 대상 확대(안 제118조의9부터 제118조의18까지)
+
+  국외 전출자가 출국 당시 양도한 것으로 보아 양도소득세 납세 의무를 부여하는 주식 등에 국외 주식 등을 추가함.
+
+사. 연금소득 원천징수세율 인하(안 제129조제1항제5호의2 및 제5호의3)
+
+  1) 연금계좌 납입액 중 세액공제를 받은 금액과 연금계좌 운용실적에 따라 증가된 금액을 종신계약에 따라 받는 연금소득에 대한 원천징수세율을 100분의 4에서 100분의 3으로 인하함.
+
+  2) 원천징수되지 아니한 퇴직소득을 연금수령할 때 실제 수령연차가 20년을 초과하는 경우의 원천징수세율을 연금외수령 원천징수세율의 100분의 60에서 100분의 50으로 인하함.
+
+아. 사업소득 연말정산 시 추가 납부세액 분납제도 신설(안 제144조의2)
+
+  연말정산 사업소득을 지급하는 원천징수의무자가 연말정산으로 추가 징수하여야 하는 세액이 10만원을 초과하는 경우 원천징수의무자가 해당 과세기간의 다음 연도 2월분부터 4월분의 사업소득을 지급할 때까지 해당 세액을 나누어 원천징수할 수 있도록 함.
+
+
+
+
+
+참고사항
+
+
+
+가. 이 법률안은 「국회법」 제85조의3제4항에 따라 2026년도 세입예산안 부수 법률안으로 지정될 필요가 있음
+
+나. 이 법률안은 이 법률안과 함께 제출되는 「법인세법 일부개정법률안」(의안번호 제12656호)의 의결을 전제로 하므로, 해당 법률안이 의결되지 아니하거나 수정의결되는 경우에는 이에 맞추어 조정되어야 할 것임</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="소득세법 일부개정법률안(이수진의원 등 11인)">소득세법 일부개정법률안(이수진의원 등 11인)</div>
+                <div class="bill-code">PRC_X2Y5W0W1U1T5U0B8C3B9B1A4Y6Y8G7</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">0.0%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">1</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.633</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.633</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 근로자가 사내급식이나 이와 유사한 방법으로 제공받는 식사 기타 음식물 또는 근로자가 받는 월 20만원 이하의 식사대에 대하여 비과세 혜택을 주고 있음.
+
+  최근 국제 공급망 불안정으로 원자재 가격이 상승하고, 이에 따라 물가가 급등하고 있어 근로자의 외식 물가에 대한 경제적 부담을 줄여줄 필요가 있다는 의견이 제기되고 있음.
+
+  이에 근로자가 식사대에 대하여 비과세 혜택을 받고 있는 금액을 현행 20만원 이하에서 30만원으로 상향하려는 것임(안 제12조제3호러목).</div>
+                
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="하였습니다 사기 사칭 있다고 필요하였습니다 하였는데요 피해를 투자 중요하였습니다 sns 유명 주의가 신뢰를 사이트는 모집하는 자금을 가짜 입금을 등록 유사수신행위는">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">7</span>
+          </td>
+          <td class="topic">30</td>
+          <td class="tname"><div class="tname-text clamp-2" title="유사수신행위의 등록 및 자금 모집 주의">유사수신행위의 등록 및 자금 모집 주의</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("하였습니다")'>하였습니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기")'>사기</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사칭")'>사칭</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있다고")'>있다고</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("필요하였습니다")'>필요하였습니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("하였는데요")'>하였는데요</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해를")'>피해를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("투자")'>투자</button><span class='kw-more' title='중요하였습니다, sns, 유명, 주의가, 신뢰를, 사이트는, 모집하는, 자금을, 가짜, 입금을, 등록, 유사수신행위는'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="자본시장과 금융투자업에 관한 법률">자본시장과 금융투자업에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:71%"></div></div>
+            <div class="law-meta">법률 점유율: 71.7% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)</span>
+                <span class="chip-pct">16.1%</span>
+              </div>
+              <div class="chip-bar"><div style="width:16%"></div></div>
+            </div>
+            <div class="chip silver" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)</span>
+                <span class="chip-pct">15.1%</span>
+              </div>
+              <div class="chip-bar"><div style="width:15%"></div></div>
+            </div>
+            <div class="chip bronze" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)</span>
+                <span class="chip-pct">14.1%</span>
+              </div>
+              <div class="chip-bar"><div style="width:14%"></div></div>
+            </div></td>
+          <td class="num" data-val="1218">1218<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="6090">6090<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("하였습니다")'>하였습니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사기")'>사기</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사칭")'>사칭</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있다고")'>있다고</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("필요하였습니다")'>필요하였습니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("하였는데요")'>하였는데요</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해를")'>피해를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("투자")'>투자</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("중요하였습니다")'>중요하였습니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("sns")'>sns</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("유명")'>유명</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("주의가")'>주의가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("신뢰를")'>신뢰를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사이트는")'>사이트는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("모집하는")'>모집하는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("자금을")'>자금을</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("가짜")'>가짜</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("입금을")'>입금을</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("등록")'>등록</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("유사수신행위는")'>유사수신행위는</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)</div>
+                <div class="bill-code">PRC_X2Y5W0X7V1W4U1U7D2B1B2Z4A9Z0Z9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">16.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">983</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.636</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.733</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">「상법」은 주식회사가 자기 명의와 계산으로 자사가 발행한 주식을 취득ㆍ보유하는 ‘자기주식’의 취득 및 처분에 대해 규정하고 있음. 특히 현행법은 주권상장법인에 한해 자기주식의 취득을 허용하면서, 취득 한도와 이사회 결의 등 절차적 특례를 두고 있음.
+
+  그러나 현재의 규제는 최소한의 기준만 제시하고 있어, 자기주식이 경영권 방어 수단으로 악용되거나, 불공정거래의 도구로 활용되는 사례를 발생하면서, 일반 투자자의 이익이 침해되고, 자본시장 전체의 신뢰를 훼손하고 있음.
+
+  자사주 소각은 이러한 부작용을 막고, 주주가치를 실질적으로 제고하는 가장 투명한 방식 중 하나임. 단순한 보유나 임의 처분이 아닌, 자사주를 시장에서 회수한 후 이를 완전히 소각함으로써 유통 주식 수를 줄이고, 기존 주주의 지분 가치를 높이는 긍정적 효과를 기대할 수 있음.
+
+  이에 본 개정안은 주권상장법인이 자기주식을 취득한 경우 부득이한 경우를 제외하고 대통령령으로 정하는 기준과 기간에 따라 처분하도록 하고자 함(안 제165조의3제5항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)</div>
+                <div class="bill-code">PRC_F2N5O0M8N2L7J1K4R2T6R3R2P1O1P1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">15.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">921</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.639</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.725</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">「상법」에서는 주식양수도 방식이 아닌 합병 또는 영업양수도의 경우 주주총회 결의 및 주식매수청수권 등 일반주주의 권익을 보호하기 위한 장치를 규정하고 있음.
+
+  반면, 기업의 인수ㆍ합병 방식으로 대부분을 차지하고 있는 주식양수도 방식에서는 인수인이 주식을 양수하여 피인수인에게 지불하는 경영권 프리미엄이 모든 주주에게 공유되지 않고 있음. 이로 인해 경제적 실질이 동일한 기업의 경영권 이전임에도 불구하고 합병 등의 방식과 달리 주식양수도의 경우 주주에 대한 보호가 미흡하다는 문제점이 발생하고 있음.
+
+  이에 의무공개매수제도를 도입하여 피인수회사의 모든 주주에게 주식양수도 방식의 인수ㆍ합병과정에서 보유주식을 매각할 수 있는 기회를 부여함으로써 주주의 보호를 두터이 하고자 함.
+
+
+
+
+
+주요내용
+
+
+
+가. 주식등을 선행매수한 자가 보유하게 되는 주식등의 수의 합계가 그 주식등의 총수의 100분의 25 이상이 되는 경우 잔여 주식등 전부에 대하여 공개매수를 하도록 함(안 제133조제4항 신설).
+
+나. 의무공개매수가격은 선행매수 가격과 기업의 순자산가치 등을 고려하여 대통령령으로 정하는 바에 따라 산정된 가격 이상으로 정하도록 함(안 제141조제3항 신설).
+
+다. 의무공개매수 사유가 발생한 날부터 공개매수를 완료하기 전까지 대통령령으로 정하는 기간 동안 선행매수한 주식에 대한 의결권을 행사할 수 없도록 함(안 제145조제2항 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)</div>
+                <div class="bill-code">PRC_D2E5L0M2K0L5J0K9I3Q5R4P1Q5O6P0</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">14.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">859</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.639</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.737</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">국내 상장회사의 인수ㆍ합병은 대부분 대주주의 지분 양수도를 통해 경영권을 확보하는 방식으로 진행되고 있음. 하지만 그 과정에 일반 소액주주의 권리가 외면된다는 지적이 오랫동안 제기되어 왔음. 
+
+  영국, 독일을 비롯한 주요 EU국가와 일본 등의 경우 기업의 인수합병 과정에 일반 소액주주의 권리를 보호하기 위해 의무공개매수 제도를 도입하고 있음. 하지만 우리나라는 지분 양수도 방식의 기업 인수합병 시 일반 소액주주에 대한 보호가 미흡한 상황임. 
+
+  이에 주식 양수도 방식 등의 기업인수 합병에 일정비율 이상의 주식을 의무적으로 공개매수하도록 하는 의무공개매수제도를 도입하여 일반주주들이 보유 지분을 매각할 수 있는 기회를 부여함으로써 소액주주의 권익을 보호하고자 함(안 제146조의2부터 제146조의8까지 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)</div>
+                <div class="bill-code">PRC_H2I5Q0R2P1P1O1M5N5I5J4I9I5G6H1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">13.9%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">849</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.639</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.737</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 주권상장법인이 합병, 분할, 주식의 포괄적 교환ㆍ이전, 주요 영업의 양수도 등 자본거래를 할 때 지배주주나 기업집단의 이익을 고려하는 반면, 일반주주의 권익 보호는 미흡하다는 지적이 꾸준히 제기되어 왔음.
+
+  특히, 대주주 및 특별관계인이 일정 지분 이상을 취득한 후 공개매수를 강제하지 않는 현행 규제는 소액주주에게 불리하게 작용할 수 있으며, 물적분할을 통해 신설된 법인의 상장 과정에서 기존 주주들의 이익이 충분히 보호되지 않는 사례가 다수 발생하고 있음.
+
+  이에 공개매수 의무를 강화하고, 합병 및 물적분할 시 공정한 가치 평가와 투자자 보호 장치를 마련하여 자본시장의 투명성과 공정성을 제고하고자 함.
+
+
+
+주요내용
+
+
+
+가. 특정 주주가 주식 총수의 25% 이상을 보유하게 되는 경우, 해당 회사의 잔여 주식 전부에 대해 공개매수 의무를 부과하고, 공개매수 가격은 선행매수 가격을 고려하여 대통령령이 정하는 가격 이상으로 설정(안 제133조제4항, 제141조제3항 신설).
+
+나. 합병 등의 가액 산정 시 투자자의 이익을 해치지 않는 공정한 가치 평가 의무를 부과하고, 합병 가액이 불공정하게 결정된 경우 기업 및 경영진의 연대 배상 책임을 명시하며, 계열회사 간 합병 시 주주가 법원에 검사인 선임을 청구할 수 있는 권한 부여(안 제165조의4제2항부터 5항까지 신설).
+
+다. 물적분할로 신설된 법인이 증권시장에 상장하는 경우 기존 주권상장법인의 주주에게 모집주식 총수의 35% 이상을 우선 배정하도록 의무화하고, 이를 위반할 경우 제재 조항 추가(안 제165조의6제5항, 제165조의18제10호의2 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(강준현의원 등 15인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(강준현의원 등 15인)</div>
+                <div class="bill-code">PRC_I2J4H1I2G2H6P1N1O1M5N4L4L3T8S1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">6.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">371</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.624</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.714</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">「상법」은 주식회사의 자기주식(회사가 자기의 명의와 계산으로 자신이 회사가 발행한 주식을 취득하여 보유하는 주식) 취득 및 처분에 관하여 규정하고 있음. 한편 현행법은 주권상장법인이 자기주식을 취득할 수 있도록 하면서, 취득한도, 취득ㆍ처분 시 이사회 결의 등에 관한 특례 규정을 두고 있음.
+
+  그런데 현행법은 주권상장법인의 자기주식 취득ㆍ처분에 관하여 기본적인 규제만 두고 있음. 이와 관련하여 경영진의 경영권 방어 수단으로 악용되거나 불공정거래에 악용되어 다른 투자자에게 피해를 끼칠 수 있으므로, 현행 규제를 강화할 필요가 있음.
+
+  이에 주권상장법인이 자기주식을 소각하거나 주주에게 균등 배분하는 등 열거된 방법으로만 처분할 수 있도록 주권상장법인이 자기주식을 처분 시 준수하여야 하는 방법을 상향 입법하여 주주평등의 원칙을 실현하려는 것임(안 제165조의3제5항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="스토킹 피해자의 문제 위치정보 행동을 범죄를 사회적 피해자가 피해자는 실시간 심리적 범죄입니다 범죄 행위는 공론화 타인의 특정 집단 명백한 위치정보를">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">8</span>
+          </td>
+          <td class="topic">32</td>
+          <td class="tname"><div class="tname-text clamp-2" title="스토킹 피해자의 위치정보 이용 범죄">스토킹 피해자의 위치정보 이용 범죄</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("스토킹")'>스토킹</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해자의")'>피해자의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("문제")'>문제</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("위치정보")'>위치정보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("행동을")'>행동을</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("범죄를")'>범죄를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사회적")'>사회적</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해자가")'>피해자가</button><span class='kw-more' title='피해자는, 실시간, 심리적, 범죄입니다, 범죄, 행위는, 공론화, 타인의, 특정, 집단, 명백한, 위치정보를'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="스토킹범죄의 처벌 등에 관한 법률">스토킹범죄의 처벌 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:21%"></div></div>
+            <div class="law-meta">법률 점유율: 21.1% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(정일영의원 등 14인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(정일영의원 등 14인)</span>
+                <span class="chip-pct">10.3%</span>
+              </div>
+              <div class="chip-bar"><div style="width:10%"></div></div>
+            </div>
+            <div class="chip silver" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(박덕흠의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(박덕흠의원 등 12인)</span>
+                <span class="chip-pct">6.3%</span>
+              </div>
+              <div class="chip-bar"><div style="width:6%"></div></div>
+            </div>
+            <div class="chip bronze" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(최기상의원 등 11인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(최기상의원 등 11인)</span>
+                <span class="chip-pct">2.0%</span>
+              </div>
+              <div class="chip-bar"><div style="width:2%"></div></div>
+            </div></td>
+          <td class="num" data-val="1125">1125<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="5625">5625<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("스토킹")'>스토킹</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해자의")'>피해자의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("문제")'>문제</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("위치정보")'>위치정보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("행동을")'>행동을</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("범죄를")'>범죄를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사회적")'>사회적</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해자가")'>피해자가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("피해자는")'>피해자는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("실시간")'>실시간</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("심리적")'>심리적</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("범죄입니다")'>범죄입니다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("범죄")'>범죄</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("행위는")'>행위는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("공론화")'>공론화</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("타인의")'>타인의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("특정")'>특정</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("집단")'>집단</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("명백한")'>명백한</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("위치정보를")'>위치정보를</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(정일영의원 등 14인)">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(정일영의원 등 14인)</div>
+                <div class="bill-code">PRC_G2H5F0G2O0O7M1L7M0K3L2S3T2R0Q3</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">10.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">578</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.800</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.862</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에서는 상대방등에게 우편ㆍ전화ㆍ팩스 또는 정보통신망을 이용하여 물건등을 도달하게 하는 행동을 스토킹행위 중 하나로 규정하고 있음. 
+
+  위와 같은 스토킹행위 범죄의 예방을 위하여 긴급한 경우 또는 스토킹범죄의 조사ㆍ심리 또는 피해자 보호를 위하여 사법경찰관 또는 법원이 스토킹행위자에게 접근금지 조치를 할 수 있도록 정하고 있음. 
+
+  이러한 결정에 따라 스토킹행위자는 스토킹행위의 상대방등이나 그 주거등으로부터 100미터 이내의 접근이 금지되며 상대방등에 대한 전기통신을 이용한 접근이 금지됨. 
+
+  그러나 현행법은 긴급응급조치에 대한 접근금지에 대하여 우편을 통한 접근은 명시하지 않고 있어 편지 등 우편을 이용하여 피해자에게 접근하는 행위가 발생하고 있음. 
+
+  이에 긴급응급조치와 잠정조치에 피해자에 대한 우편을 이용한 접근 금지를 추가하여 스토킹 피해자에 대한 안전조치를 강화하고자 함(안 제4조제1항제2호 및 제9조제1항제3호).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(박덕흠의원 등 12인)">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(박덕흠의원 등 12인)</div>
+                <div class="bill-code">PRC_F2E4F1D2D3L1K1K0J2J0H3I3Q9Q0P7</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">6.3%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">353</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.797</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.866</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 스토킹행위와 관련하여 7가지의 유형으로 정의하고 스토킹범죄에 대한 처벌 조항을 규정하고 있으나 스토킹행위와 관련된 범죄 유형의 다양성을 반영하지 못하고 있다는 한계가 있음. 
+
+  특히, 상대방 없는 주거지나 근무지 등의 주변을 서성거리는 것도 상황에 따라 상대방에게 상당한 불안감과 공포심을 조성시킬 수 있으며 일본의 경우 2016년 개정으로 ‘주거 등의 부근을 함부로 서성거리는 것’을 추가한 사례가 있음. 
+
+  이에 스토킹행위와 관련된 유형으로 서성거리는 행위 및 기타 그 밖의 행위를 추가하여 스토킹행위에 대한 유형을 확대하고자 함(안 제2조).</div>
+                
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(최기상의원 등 11인)">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(최기상의원 등 11인)</div>
+                <div class="bill-code">PRC_W2V5D0D6B1C2A1B7A2A9W5W2V9T8U7</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">2.0%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">114</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.781</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.845</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 스토킹범죄의 처벌 및 피해자 보호절차를 규정하고 있으며, 2023년 7월 개정을 통해 스토킹범죄에 대한 반의사불벌 조항을 삭제하여 가해자가 합의해주지 않는 피해자를 찾아가거나 가해자의 보복이 두려워 합의하는 문제를 해소하고자 하였음.
+
+  그런데 최근 연인 등 교제관계에 있거나 있었던 사람 사이에서 발생하는 교제폭력범죄가 계속 증가하고 있음에도, 현행법은 교제폭력의 특수성을 고려한 범죄 대응방안을 규정하고 있지 않아 통상적인 폭행, 상해 등의 범죄로 규율되고 있음.
+
+  하지만 폭행 등은 피해자가 협박 등에 의해 처벌을 원하지 아니한다는 의사표시를 한 경우 수사가 어렵고, 이후 반복된 폭력에 따른 피해자의 신고에도 불구하고 이전 신고 시 처벌불원 여부, 상해 등에 관한 증명이 불충분한 상황 등의 사유로 현장종결되어 이후 강력범죄로 이어지는 사례도 발생하고 있음.
+
+  이와 관련하여, 교제폭력을 법적으로 명확하게 정의하고 가해자 처벌과 긴급응급조치, 잠정조치 등 피해자 보호절차의 근거를 규정함으로써 교제폭력이 강력범죄로 이어지는 것을 방지할 필요성이 매우 크고, 교제관계에서 강압적 통제행위는 강력범죄의 전조이므로 법적 규제가 필요하다는 전문가 지적이 있음.
+
+  이에 교제폭력행위의 정의규정을 신설하고 스토킹행위의 한 유형으로 추가하여, 교제폭력행위자에 대해 긴급응급조치를 할 수 있도록 하고 교제폭력행위를 지속적 또는 반복적으로 하는 경우 스토킹범죄에 해당하여 잠정조치 및 벌칙조항이 적용되도록 함으로써 교제폭력범죄를 예방하고 피해자를 보호하려는 것임(안 제2조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(이인선의원 등 10인)">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(이인선의원 등 10인)</div>
+                <div class="bill-code">PRC_N2K5I0Q8P1Q1P1N4V0U1T5T0S8A1Z9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">63</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.794</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.833</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법에 따라 스토킹행위 신고를 받은 사법경찰관은 스토킹행위자에 대하여 스토킹행위 중단 통보, 처벌 서면경고, 피해자 등의 분리 및 접근금지 등의 응급조치를 할 수 있으며, 법원은 스토킹범죄의 원활한 심리ㆍ조사 및 피해자 보호를 위하여 피해자의 주거 및 전기통신을 이용한 접근금지, 유치장 또는 구치소의 유치 등의 잠정조치를 할 수 있음.
+
+  또한, 스토킹범죄를 저지른 사람은 3년 이하의 징역 또는 3천만원 이하의 벌금을, 흉기 등의 위험한 물건을 휴대하거나 이용하여 스토킹범죄를 저지른 사람은 5년 이하의 징역 또는 5천만원 이하의 벌금에 처하도록 하고 있음.
+
+  그런데 최근 스토킹행위자를 경찰에 신고하였음에도 가해자가 스토킹행위를 멈추지 않거나 재차 행하는 경우가 빈번히 발생하고 있으나 현행법에는 이에 대한 처벌 규정을 마련하고 있지 않아 2차 피해 발생 등 피해자 보호의 어려움이 있다는 지적이 제기됨.
+
+  이에 피해자등이 스토킹행위를 경찰에 신고한 경우 가해자가 이에 대한 보복의 목적으로 행하는 스토킹범죄를 “보복스토킹범죄”로 정의하고, 보복스토킹범죄를 저지른 자는 「특정범죄 가중처벌 등에 관한 법률」 제5조의9제2항에 따른 보복범죄 등의 가중처벌에 준하는 1년 이상의 유기징역으로 처벌하도록 하여 스토킹범죄자를 엄중히 처벌하고 피해자의 보호를 강화하려는 것임(안 제2조제2호의2 및 제18조제4항 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(이상식의원 등 10인)">스토킹범죄의 처벌 등에 관한 법률 일부개정법률안(이상식의원 등 10인)</div>
+                <div class="bill-code">PRC_J2I5G0O3N1M9N1L6N4L2K2J7R6P1Q9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">0.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">34</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.734</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.781</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 스토킹 범죄에 대한 검찰의 불기소 및 법원의 직권결정으로 인한 잠정조치의 취소ㆍ변경ㆍ연장 조치 시 통지해야 할 대상을 법률에 규정하고 있음.
+
+  하지만 그 대상에 이를 집행한 경찰이 빠져 있어 집행을 담당한 경찰관이 법원의 결정을 인지하기 어렵고, 잠정조치 실효 또는 연장 사실을 즉각적으로 알지 못하여 경찰이 대상자에 대한 적절한 신병처리를 하지 못하는 등의 문제가 발생하고 있어 이러한 입법 미비를 바로 잡고자 함.
+
+  또한 스토킹 범죄 가해자가 잠정조치 제2호ㆍ제3호를 위반한 경우 피해자가큰 두려움을 느끼는 등 추가적인 스토킹 범죄를 구성함에도 불구하고 이러한 위반 행위에 대해 단순 스토킹 범죄보다 낮은 형량을 부과하고 있어 처벌의 실효성이 부족하다는 지적이 있음.
+
+  이에 법원의 잠정조치 결정을 잠정조치 집행을 담당한 경찰서의 장에게 통지하도록 하고, 잠정조치 제2호와 제3호를 이행하지 아니한 사람은 스토킹 범죄와 같은 수준의 처벌을 받도록 하려는 것임(안 제9조제5항, 제11조제4항, 제11조제5항, 제20조제2항).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="후보는 이재명 김문수 대선 후보가 후보 이준석 국민의힘 후보의 대통령 권영국 했다 있다 더불어민주당 윤석열 정치 경제 x000d 민주당 후보를">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">9</span>
+          </td>
+          <td class="topic">37</td>
+          <td class="tname"><div class="tname-text clamp-2" title="대선 후보 비교">대선 후보 비교</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보는")'>후보는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재명")'>이재명</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("김문수")'>김문수</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대선")'>대선</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보가")'>후보가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보")'>후보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이준석")'>이준석</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("국민의힘")'>국민의힘</button><span class='kw-more' title='후보의, 대통령, 권영국, 했다, 있다, 더불어민주당, 윤석열, 정치, 경제, x000d, 민주당, 후보를'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="중대재해 처벌 등에 관한 법률">중대재해 처벌 등에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:24%"></div></div>
+            <div class="law-meta">법률 점유율: 24.4% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)</span>
+                <span class="chip-pct">10.5%</span>
+              </div>
+              <div class="chip-bar"><div style="width:10%"></div></div>
+            </div>
+            <div class="chip silver" title="중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)</span>
+                <span class="chip-pct">7.0%</span>
+              </div>
+              <div class="chip-bar"><div style="width:6%"></div></div>
+            </div>
+            <div class="chip bronze" title="중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)</span>
+                <span class="chip-pct">5.4%</span>
+              </div>
+              <div class="chip-bar"><div style="width:5%"></div></div>
+            </div></td>
+          <td class="num" data-val="998">998<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="4990">4990<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보는")'>후보는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재명")'>이재명</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("김문수")'>김문수</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대선")'>대선</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보가")'>후보가</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보")'>후보</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이준석")'>이준석</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("국민의힘")'>국민의힘</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보의")'>후보의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대통령")'>대통령</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("권영국")'>권영국</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("했다")'>했다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("있다")'>있다</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("더불어민주당")'>더불어민주당</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("윤석열")'>윤석열</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("정치")'>정치</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("경제")'>경제</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("x000d")'>x000d</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("민주당")'>민주당</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("후보를")'>후보를</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(박홍배의원 등 12인)</div>
+                <div class="bill-code">PRC_O2W5T0S9B0A3X1F6E5B9A0Z1I4F5E2</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">10.5%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">525</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.630</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.848</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">중대재해의 발생을 막고 국민의 생명을 보호하기 위하여 지난 2021년 현행법이 제정되어 2022년 1월 27일부터 시행 중에 있음. 
+
+  그러나 현행법 시행 이후에도 지속적으로 중대재해가 발생하고 있고, 특히 동일한 사업장에서 동종 또는 유사한 중대재해가 재발하는 사례가 빈발하고 있어 더 강력한 대응이 필요하다는 지적이 이어지고 있음. 
+
+  이에 사업의 안전보건에 관한 조건을 실질적이고 구체적으로 지배ㆍ결정할 수 있는 실질적 지위에 있는 자는 그 형식상의 지위ㆍ직위 여하를 불문하고 그 범위에 있어서는 경영책임자등으로 보도록 하고 과징금 제도도 신설하여, 사업장 등에서의 안전보건관리체계가 보다 강하게 구축되도록 하고 이를 통해 국민의 생명을 보다 강하게 보호하려는 것임(안 제2조제9호가목 후단 및 제15조의2 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(민형배의원 등 12인)</div>
+                <div class="bill-code">PRC_Z2Y5W0X6E2F5E1E5D1B1B4X8Y7W6X6</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">7.0%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">348</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.624</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.824</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">법 제정 본래 취지를 명확히 하기 위해, 현행법의 제명을 「중대재해 예방 등에 관한 법률」로 변경하고자 합니다.  
+
+  2022년 1월 27일 시행된 중대재해처벌법은 사업주나 경영책임자가 안전보건 확보 의무를 위반해 중대 산업재해가 발생한 경우, 징역이나 벌금을 부과하는 것을 주요 내용으로 합니다. 그러나 이 법의 제정 목적은 형사처벌 자체에 있는 것이 아니라, 시민의 생명과 안전을 최우선으로 보호하는 데 있습니다.
+
+  그런데 현행 제명이 「중대재해 처벌 등에 관한 법률」로 되어 있어, 법의 초점이 ‘예방’이 아닌 ‘처벌’에 맞춰져 있는 것처럼 비춰질 우려가 있습니다. 이로 인해 정당한 기업활동까지 위축될 수 있다는 지적도 제기됩니다. 
+
+  이에, 제명을 「중대재해 예방 등에 관한 법률」로 변경해 법의 취지를 분명히 하고자 합니다. 아울러, 중대재해를 일으킨 사업주에 대한 처벌 및 손해배상 책임은 이 법을 다른 법률에 우선하여 적용하고자 합니다. 중대재해의 예방과 사후 책임을 종합적으로 규율하는 특별법으로서의 위상을 명확히 하기 위한 것입니다.(안 제명 및 제2조의2).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)">중대재해 처벌 등에 관한 법률 일부개정법률안(구자근의원 등 12인)</div>
+                <div class="bill-code">PRC_J2H5G0G3O0P7N1O0N1L1L0H3I9G3G4</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">5.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">271</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.646</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.859</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">사망사고 등 중대한 재해를 발생시킨 사업주와 경영책임자, 법인의 형사책임을 대폭 강화한「중대재해 처벌 등에 관한 법률」(이하 “중대재해처벌법”이라 함)이 시행된 지 3년이 지났으나, 현재까지는 사망사고 감소 효과가 미미함.
+
+  법률규정만으로는 경영책임자에 해당하는 ‘이에 준하여 안전보건에 관한 업무를 담당하는 사람’이 누구인지 명확하지 않으며, 처벌요건인 안전ㆍ보건 관계 법령의 범위도 모호해 안전인력을 확보한 대형사업장 조차 법 준수에 상당한 애로를 겪고 있음.
+
+  제5조 후단의 ‘시설, 장비, 장소 등에 대하여 실질적으로 지배ㆍ운영ㆍ관리할 책임이 있는 경우’가 어디까지인지 알 수 없고, 제4조와 보호대상(종사자)이 동일해 현장 혼란만 초래하고 있음.
+
+  또한 경영자 신분에 있다는 이유만으로 현장에서 사고에 직접 기여한 자보다 더 무겁게 처벌하는 것은 과잉입법으로, 실제 법원은 사망원인을 제공한 법 위반 행위자에게는 징역 1년 미만, 주의감독(과실) 책임이 있는 경영책임자(대표이사)에게는 대부분 징역 1년 이상을 선고하고 있음.
+
+  한편, 중대재해처벌법은 많은 법률조항의 불명확성과 처벌의 과도성에도 불구하고, 법률 제정 이후 단 한 차례도 개정이 추진되지 못했음.
+
+  이에, 동 법률의 경영책임자 정의와 안전ㆍ보건 관계 법령의 범위를 구체화하고 법 적용에 대한 혼란이 없도록 제5조를 삭제하는 등 처벌요건을 명확히 하며, 경영자 개인과 법인에 대한 형사처벌 수준을 완화함으로써, 현장의 혼란을 최소화하고 중대재해 예방의 실효성을 확보하려는 것임.
+
+
+
+주요내용
+
+
+
+  가. 사업의 안전보건 조직, 인력, 예산을 총괄ㆍ관리하도록 권한과 책임을 위임받은 사람을 경영책임자로 규정함(안 제2조).
+
+  나. 안전ㆍ보건 관계 법령의 범위에 대한 시행령 위임규정을 마련함(안 제4조).
+
+  다. 도급, 용역, 위탁 등 관계에서의 안전 및 보건 확보의무 규정을 삭제함(안 제5조).
+
+  라. 중대산업재해 발생 시 경영책임자등에 대한 처벌과 법인의 벌금수준을 완화함(안 제6조 및 제7조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)">중대재해 처벌 등에 관한 법률 일부개정법률안(김주영의원 등 10인)</div>
+                <div class="bill-code">PRC_U2S5T0B5C0A7B1Z7Z2X6G5G2E5F3D1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">1.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">72</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.604</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.755</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 사망사고 등 중대재해로부터 시민의 안전을 위해 특정원료 또는 제조물, 공중이용시설 및 공중교통수단의 설계, 제조, 설치, 관리상의 결함으로 발생하는 재해를 ‘중대시민재해’로 규정하고, 해당 사업장 및 시설의 안전ㆍ보건 조치 의무를 위반해 중대시민재해에 이르게 한 사업주 등을 처벌하도록 하고 있음.
+
+  그러나 최근 땅꺼짐, 공항 사고 등 안전사고로 인한 일반 시민의 인명피해가 발생함에도, 도로 및 활주로 등은 중대시민재해 요건인 ‘공중이용시설’에 포함되지 않아 중대시민재해의 대상을 확대해야 한다는 지적이 제기되고 있음.
+
+  이에 ‘공중이용시설 및 공중교통시설’의 범위를 확대하여 도로, 활주로와 같이 일반 시민의 생활과 밀접한 관련이 있는 시설의 설계, 제조, 설치 또는 관리상의 결함을 원인으로 발생하는 안전 사고까지 중대시민재해의 범위에 명확히 포함함으로써 재해를 예방하고 안전 관리에 대한 경각심을 높이고자 함(안 제2조).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr class="" onclick="rowToggle(this, event)" data-keywords="이재용 무죄 삼성전자 무죄를 회장의 합병 회장이 회장은 경영권 회장 사법 삼성 2심 검찰은 혐의 19개 2015년 대법원 재판부는 제일모직">
+          <td class="rank">
+            <button class="toggle" aria-label="세부 보기" title="세부 보기/닫기" onclick="toggleExpand(this); event.stopPropagation();">▾</button>
+            <span class="rk">10</span>
+          </td>
+          <td class="topic">42</td>
+          <td class="tname"><div class="tname-text clamp-2" title="이재용 회장 무죄 판결과 삼성 경영권 합병 재판">이재용 회장 무죄 판결과 삼성 경영권 합병 재판</div></td>
+          <td class="kw"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재용")'>이재용</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("무죄")'>무죄</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("삼성전자")'>삼성전자</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("무죄를")'>무죄를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장의")'>회장의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("합병")'>합병</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장이")'>회장이</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장은")'>회장은</button><span class='kw-more' title='경영권, 회장, 사법, 삼성, 2심, 검찰은, 혐의, 19개, 2015년, 대법원, 재판부는, 제일모직'>+12</span></td>
+          <td class="law">
+            <div class="law-name clamp-1" title="자본시장과 금융투자업에 관한 법률">자본시장과 금융투자업에 관한 법률</div>
+            <div class="bar"><div class="fill" style="width:76%"></div></div>
+            <div class="law-meta">법률 점유율: 76.1% · 이 토픽의 의안 언급 중 해당 법률의 비율</div>
+          </td>
+          <td class="top3">
+            <div class="chip gold" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#1</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)</span>
+                <span class="chip-pct">19.0%</span>
+              </div>
+              <div class="chip-bar"><div style="width:18%"></div></div>
+            </div>
+            <div class="chip silver" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)">
+              <div class="chip-row">
+                <span class="medal">#2</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)</span>
+                <span class="chip-pct">14.4%</span>
+              </div>
+              <div class="chip-bar"><div style="width:14%"></div></div>
+            </div>
+            <div class="chip bronze" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)">
+              <div class="chip-row">
+                <span class="medal">#3</span>
+                <span class="chip-label clamp-2">자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)</span>
+                <span class="chip-pct">12.6%</span>
+              </div>
+              <div class="chip-bar"><div style="width:12%"></div></div>
+            </div></td>
+          <td class="num" data-val="829">829<div class="minor">해당 토픽 문서 수</div></td>
+          <td class="num" data-val="4145">4145<div class="minor">의안 언급 총합</div></td>
+        </tr>
+        <tr class="expand-row" style="display:none" data-open="0">
+          <td colspan="8">
+            <div class="expand-wrap cards">
+              <div class="expand-title">토픽 키워드 & 매칭된 의안 <b>Top 5</b> 상세</div>
+              <div class="kw-block">
+                <div class="kw-title">Top Keywords</div>
+                <div class="kw-list"><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("이재용")'>이재용</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("무죄")'>무죄</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("삼성전자")'>삼성전자</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("무죄를")'>무죄를</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장의")'>회장의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("합병")'>합병</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장이")'>회장이</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장은")'>회장은</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("경영권")'>경영권</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("회장")'>회장</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("사법")'>사법</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("삼성")'>삼성</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("2심")'>2심</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("검찰은")'>검찰은</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("혐의")'>혐의</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("19개")'>19개</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("2015년")'>2015년</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("대법원")'>대법원</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("재판부는")'>재판부는</button><button class='kw-chip' title='이 키워드로 필터링' onclick='filterByKeyword("제일모직")'>제일모직</button></div>
+                <button class="kw-copy" onclick='copyKeywords(this)'>모두 복사</button>
+              </div>
+              <div class="card-grid">
+                
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 1</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(이정문의원 등 12인)</div>
+                <div class="bill-code">PRC_H2I5Q0R2P1P1O1M5N5I5J4I9I5G6H1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">19.0%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">786</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.768</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.859</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 주권상장법인이 합병, 분할, 주식의 포괄적 교환ㆍ이전, 주요 영업의 양수도 등 자본거래를 할 때 지배주주나 기업집단의 이익을 고려하는 반면, 일반주주의 권익 보호는 미흡하다는 지적이 꾸준히 제기되어 왔음.
+
+  특히, 대주주 및 특별관계인이 일정 지분 이상을 취득한 후 공개매수를 강제하지 않는 현행 규제는 소액주주에게 불리하게 작용할 수 있으며, 물적분할을 통해 신설된 법인의 상장 과정에서 기존 주주들의 이익이 충분히 보호되지 않는 사례가 다수 발생하고 있음.
+
+  이에 공개매수 의무를 강화하고, 합병 및 물적분할 시 공정한 가치 평가와 투자자 보호 장치를 마련하여 자본시장의 투명성과 공정성을 제고하고자 함.
+
+
+
+주요내용
+
+
+
+가. 특정 주주가 주식 총수의 25% 이상을 보유하게 되는 경우, 해당 회사의 잔여 주식 전부에 대해 공개매수 의무를 부과하고, 공개매수 가격은 선행매수 가격을 고려하여 대통령령이 정하는 가격 이상으로 설정(안 제133조제4항, 제141조제3항 신설).
+
+나. 합병 등의 가액 산정 시 투자자의 이익을 해치지 않는 공정한 가치 평가 의무를 부과하고, 합병 가액이 불공정하게 결정된 경우 기업 및 경영진의 연대 배상 책임을 명시하며, 계열회사 간 합병 시 주주가 법원에 검사인 선임을 청구할 수 있는 권한 부여(안 제165조의4제2항부터 5항까지 신설).
+
+다. 물적분할로 신설된 법인이 증권시장에 상장하는 경우 기존 주권상장법인의 주주에게 모집주식 총수의 35% 이상을 우선 배정하도록 의무화하고, 이를 위반할 경우 제재 조항 추가(안 제165조의6제5항, 제165조의18제10호의2 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 2</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)</div>
+                <div class="bill-code">PRC_X2Y5W0X7V1W4U1U7D2B1B2Z4A9Z0Z9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">14.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">598</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.749</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.827</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">「상법」은 주식회사가 자기 명의와 계산으로 자사가 발행한 주식을 취득ㆍ보유하는 ‘자기주식’의 취득 및 처분에 대해 규정하고 있음. 특히 현행법은 주권상장법인에 한해 자기주식의 취득을 허용하면서, 취득 한도와 이사회 결의 등 절차적 특례를 두고 있음.
+
+  그러나 현재의 규제는 최소한의 기준만 제시하고 있어, 자기주식이 경영권 방어 수단으로 악용되거나, 불공정거래의 도구로 활용되는 사례를 발생하면서, 일반 투자자의 이익이 침해되고, 자본시장 전체의 신뢰를 훼손하고 있음.
+
+  자사주 소각은 이러한 부작용을 막고, 주주가치를 실질적으로 제고하는 가장 투명한 방식 중 하나임. 단순한 보유나 임의 처분이 아닌, 자사주를 시장에서 회수한 후 이를 완전히 소각함으로써 유통 주식 수를 줄이고, 기존 주주의 지분 가치를 높이는 긍정적 효과를 기대할 수 있음.
+
+  이에 본 개정안은 주권상장법인이 자기주식을 취득한 경우 부득이한 경우를 제외하고 대통령령으로 정하는 기준과 기간에 따라 처분하도록 하고자 함(안 제165조의3제5항 신설 등).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 3</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(김현정의원 등 12인)</div>
+                <div class="bill-code">PRC_F2N5O0M8N2L7J1K4R2T6R3R2P1O1P1</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">12.6%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">524</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.756</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.818</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">「상법」에서는 주식양수도 방식이 아닌 합병 또는 영업양수도의 경우 주주총회 결의 및 주식매수청수권 등 일반주주의 권익을 보호하기 위한 장치를 규정하고 있음.
+
+  반면, 기업의 인수ㆍ합병 방식으로 대부분을 차지하고 있는 주식양수도 방식에서는 인수인이 주식을 양수하여 피인수인에게 지불하는 경영권 프리미엄이 모든 주주에게 공유되지 않고 있음. 이로 인해 경제적 실질이 동일한 기업의 경영권 이전임에도 불구하고 합병 등의 방식과 달리 주식양수도의 경우 주주에 대한 보호가 미흡하다는 문제점이 발생하고 있음.
+
+  이에 의무공개매수제도를 도입하여 피인수회사의 모든 주주에게 주식양수도 방식의 인수ㆍ합병과정에서 보유주식을 매각할 수 있는 기회를 부여함으로써 주주의 보호를 두터이 하고자 함.
+
+
+
+
+
+주요내용
+
+
+
+가. 주식등을 선행매수한 자가 보유하게 되는 주식등의 수의 합계가 그 주식등의 총수의 100분의 25 이상이 되는 경우 잔여 주식등 전부에 대하여 공개매수를 하도록 함(안 제133조제4항 신설).
+
+나. 의무공개매수가격은 선행매수 가격과 기업의 순자산가치 등을 고려하여 대통령령으로 정하는 바에 따라 산정된 가격 이상으로 정하도록 함(안 제141조제3항 신설).
+
+다. 의무공개매수 사유가 발생한 날부터 공개매수를 완료하기 전까지 대통령령으로 정하는 기간 동안 선행매수한 주식에 대한 의결권을 행사할 수 없도록 함(안 제145조제2항 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 4</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(이강일의원 등 10인)</div>
+                <div class="bill-code">PRC_K2I5J0F6G1E0E1C0B2C4J1K4J8J1H8</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">12.4%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">513</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.753</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.814</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법상 주권상장법인이 합병 등을 할 경우 산정 가액에 대한 명확한 기준이 없어 자산가치나 수익가치보다 낮은 주식가격을 기준으로 삼는 사례가 발생하고 있으며, 이는 일반주주의 권익 침해로 이어질 수 있음.
+
+  특히 소액주주의 경우 합병 과정에서 불리한 조건으로 주식을 처분해야 하는 상황이 발생하고 있으며, 주가조작이나 저가 합병을 통한 지배주주의 이익 편취 문제가 지속적으로 제기되어 왔음.
+
+  따라서 합병 등에서 산정되는 가액에 대해 공정가액 산정 원칙을 법에 명문화하고, 순자산가치를 하한선으로 설정함으로써 투자자 보호 및 자본시장 신뢰 회복을 도모하려는 것임(제165조의4제2항 신설 등).
+
+
+
+
+
+주요내용
+
+
+
+가. 합병가액 산정 기준 명시 (신설 제165조의4제2항)
+
+  주권상장법인이 합병 등을 하는 경우, 주식가격, 자산가치, 수익가치 등을 종합적으로 고려하여 공정하게 산정하여야 함. 다만, 산정된 가액이 순자산가치에 미달하는 경우, 순자산가치를 가액으로 간주함.
+
+나. 관련 조문 번호 정비(개정 제165조의4제3항부터 제5항까지)
+
+  기존 제2항부터 제4항까지를 각각 제3항부터 제5항까지로 변경하고, 관련 조항인 제165조의18제4호 역시 조문 번호에 맞게 수정.</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+            <div class="bill-card">
+              <div class="bill-card-head">
+                <span class="badge">Top 5</span>
+                <div class="bill-title clamp-2" title="자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)">자본시장과 금융투자업에 관한 법률 일부개정법률안(천준호의원 등 11인)</div>
+                <div class="bill-code">PRC_X2V5W0U2V0T5U0P9Q3P6N2N3M7N3U9</div>
+              </div>
+              <div class="bill-card-body">
+                <div class="stats">
+                  <span><span class="label">Share</span> <span class="val">12.1%</span></span>
+                  <span><span class="label">Mentions</span> <span class="val">502</span></span>
+                  <span><span class="label">Avg</span> <span class="val">0.742</span></span>
+                  <span><span class="label">Max</span> <span class="val">0.845</span></span>
+                </div>
+                <div class='chip-row top'><span class='sec-chip'>제안이유 · 주요내용</span></div>
+                <div class="summary clamp-6">현행법은 주권상장법인이 신기술의 도입, 재무구조의 개선 등 회사의 경영상 목적을 달성하기 위하여 필요한 경우 등 제한된 경우에 한하여 특정한 자에게 신주인수의 청약 기회를 부여하고 있음.
+
+최근 주권상장법인이 물적 분할을 공시하는 경우 주가가 하락하여 소액주주들이 큰 피해를 입는 경우가 발생하고 있으나 현행법상 물적 분할의 경우 주주에게 신주인수권을 부여하고 있지 아니하여 결과적으로 소액주주의 손실을 보전할 방법이 없다는 지적이 있음. 이에 대한 대책으로 분할신설법인이 모집하는 신주를 분할된 법인의 소액주주들에게 우선 배정하는 방식이 효과적이라는 주장이 제기되고 있음.
+
+  이에 분할로 설립되는 회사를 증권시장에 상장시키기 위해 신주를 모집하는 경우 모집하는 신주의 100분의 60 이상을 분할되는 회사의 소액주주들에게 우선 배정하도록 함으로써 물적 분할로 인한 소액주주의 피해를 최소화하도록 하기 위한 것임(안 제165조의6제5항ㆍ제6항 신설).</div>
+                <button class='more-btn' onclick='toggleSummary(this)'>더보기</button>
+              </div>
+            </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+<script>
+function sortTable(col, type) {
+  const table = document.getElementById('tbl');
+  const tbody = table.tBodies[0];
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('expand-row'));
+  const pairs = [];
+  for (let i=0; i<rows.length; i+=2) {
+    const row = rows[i];
+    const exp = rows[i+1];
+    let val = row.children[col].textContent.trim();
+    if (type === 'num') {
+      val = parseFloat(row.children[col].getAttribute('data-val') || row.children[col].textContent) || 0;
+    } else {
+      val = val.toLowerCase();
+    }
+    pairs.push([row, exp, val]);
+  }
+  const asc = (table.getAttribute('data-sort-col') != col || table.getAttribute('data-sort-dir') === 'desc');
+  pairs.sort((a,b) => (a[2] > b[2] ? 1 : a[2] < b[2] ? -1 : 0) * (asc ? 1 : -1));
+  for (const [r,e] of pairs) { tbody.appendChild(r); tbody.appendChild(e); }
+  table.setAttribute('data-sort-col', col);
+  table.setAttribute('data-sort-dir', asc ? 'asc' : 'desc');
+}
+
+function applyFilter() {
+  const q = (document.getElementById('filter').value || '').toLowerCase();
+  const tbody = document.getElementById('tbl').tBodies[0];
+  const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('expand-row'));
+  for (let i=0; i<rows.length; i+=1) {
+    const row = rows[i];
+    const cols = row.querySelectorAll('td');
+    const tname = (cols[2]?.innerText || '').toLowerCase();
+    const kw = (row.getAttribute('data-keywords') || '').toLowerCase();
+    const law = (cols[4]?.innerText || '').toLowerCase();
+    const top3 = (cols[5]?.innerText || '').toLowerCase();
+    const show = !q || tname.includes(q) || kw.includes(q) || law.includes(q) || top3.includes(q);
+    row.style.display = show ? '' : 'none';
+    const exp = row.nextElementSibling;
+    if (exp && exp.classList.contains('expand-row')) exp.style.display = show ? exp.style.display : 'none';
+  }
+}
+
+function resetFilter() {
+  document.getElementById('filter').value = '';
+  applyFilter();
+}
+
+function rowToggle(tr, ev) {
+  const exp = tr.nextElementSibling;
+  if (!exp || !exp.classList.contains('expand-row')) return;
+  const opened = exp.style.display !== 'none';
+  exp.style.display = opened ? 'none' : '';
+}
+
+function toggleExpand(btn) {
+  const tr = btn.closest('tr');
+  rowToggle(tr);
+}
+
+function filterByKeyword(k) {
+  const inp = document.getElementById('filter');
+  inp.value = k;
+  applyFilter();
+}
+
+function copyKeywords(btn) {
+  const block = btn.closest('.kw-block');
+  if (!block) return;
+  const list = block.querySelector('.kw-list');
+  const chips = list ? Array.from(list.querySelectorAll('.kw-chip')).map(c => c.textContent.trim()) : [];
+  const text = chips.join(', ');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '모두 복사', 1200);
+  });
+}
+
+function toggleSummary(btn) {
+  const card = btn.closest('.bill-card');
+  const s = card.querySelector('.summary');
+  if (!s) return;
+  const expanded = s.classList.toggle('expanded');
+  btn.textContent = expanded ? '접기' : '더보기';
+}
+</script>
+</body>
+</html>

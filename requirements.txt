@@ -1,0 +1,15 @@
+# Core ML stack
+torch
+transformers
+tqdm
+peft
+bitsandbytes; platform_system != "Windows"
+
+# Data & utilities
+pandas
+requests
+xmltodict
+wandb
+
+# (Optional) If you plan to use HF accelerate/optimum, uncomment:
+# accelerate

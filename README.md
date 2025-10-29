@@ -1,4 +1,4 @@
-# law-demand-dashboard
+# ⚖️ 뉴스 및 소셜 데이터 토픽 × 법률 의안 리더보드 프로젝트
 
 ![데모 전체 스크린샷](main.png)
 
